@@ -700,16 +700,17 @@ define('app/game', [
             })
             gameObjects.push(enemy)
           break;
-          case 5:
-            victoryTile = new VictoryTile({
+          case 4:
+            var tile = new Tile({
               pos: {
                 x: colIdx * TILE_SIZE,
                 y: rowIdx * TILE_SIZE
-              }
+              },
+              image: images.tile2
             })
-            gameObjects.push(victoryTile)
+            gameObjects.push(tile)
           break;
-          case 6:
+          case 5:
             var tile = new Tile({
               pos: {
                 x: colIdx * TILE_SIZE,
