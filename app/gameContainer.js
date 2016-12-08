@@ -12,7 +12,7 @@ requirejs([
 ], function (game, userInput) {
 
   let running = true
-  let muted = false
+  let muted = true
 
   const canvas = document.getElementById('canvas')
   const renderingContext = canvas.getContext('2d')
