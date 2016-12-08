@@ -38,6 +38,7 @@ define('app/game', [
   let grandpa;
   let victoryTile;
   let currentMapIdx = 0;
+  let hasWon = false
 
   function debugWriteButtons(pad) {
         if (!DEBUG_WRITE_BUTTONS) return;
@@ -304,8 +305,19 @@ define('app/game', [
       this.speed = 0.5;
       this.tileWidth = 1.0001
       this.tileHeight = 1.0001
+
+      this.spritesheet = SpriteSheet.new(images.enemy_walk, {
+        frames: [200, 200, 200, 200],
+        x: 0,
+        y: 0,
+        width: 64,
+        height: 96,
+        restart: true,
+        autoPlay: true,
+      });
     }
     tick() {
+      this.spritesheet.tick(1000/60);
       if (!this.direction && this.distance > this.totalWalkDistance) {
         this.direction = true;
       } else if (this.direction && this.distance < 0) {
@@ -340,8 +352,17 @@ define('app/game', [
       }
     }
     draw(renderingContext) {
-      renderingContext.fillStyle = "#FF0000";
-      renderingContext.fillRect(this.pos.x, this.pos.y, (this.tileWidth || 1) * TILE_SIZE, (this.tileHeight || 1) * TILE_SIZE);
+      //renderingContext.fillStyle = "#FF0000";
+      //renderingContext.fillRect(this.pos.x, this.pos.y, (this.tileWidth || 1) * TILE_SIZE, (this.tileHeight || 1) * TILE_SIZE);
+
+      renderingContext.save()
+      renderingContext.translate(this.pos.x - (TILE_SIZE/2), this.pos.y - TILE_SIZE * 2);
+      if (this.direction) {
+        renderingContext.scale(-1, 1);
+        renderingContext.translate(-TILE_SIZE * 2, 0);
+      }
+      this.spritesheet.draw(renderingContext);
+      renderingContext.restore();
     }
   }
 
@@ -416,24 +437,24 @@ define('app/game', [
       this.image = images.pipe
     }
     tick() {
-      if (!this.done) {
-        if (Math.random() > 0.0001) {
-          var particleSettings = {
-            pos: {
-              x: victoryTile.pos.x + (Math.random() * TILE_SIZE / 2) + TILE_SIZE / 4,
-              y: victoryTile.pos.y - 4,
-            },
-            velocity: {
-              x: (Math.random() - 0.5) * 1.5,
-              y: -1 - (Math.random()) * 8,
-            },
-            image: images.lavaparticle,
-            lifetime: 90,
-          }
-          var particle = new Particle(particleSettings);
-          gameObjects.push(particle);
-        }
-      }
+      // if (!this.done) {
+      //   if (Math.random() > 0.0001) {
+      //     var particleSettings = {
+      //       pos: {
+      //         x: victoryTile.pos.x + (Math.random() * TILE_SIZE / 2) + TILE_SIZE / 4,
+      //         y: victoryTile.pos.y - 4,
+      //       },
+      //       velocity: {
+      //         x: (Math.random() - 0.5) * 1.5,
+      //         y: -1 - (Math.random()) * 8,
+      //       },
+      //       image: images.lavaparticle,
+      //       lifetime: 90,
+      //     }
+      //     var particle = new Particle(particleSettings);
+      //     gameObjects.push(particle);
+      //   }
+      // }
     }
   }
 
@@ -591,14 +612,10 @@ define('app/game', [
     }
     if (isOfTypes(gameObject, other, Murrio, VictoryTile)) {
       var murrio = getOfType(gameObject, other, Murrio);
-      murrio.destroy();
-      var gr = new GameRestarter()
-      gr.done = true;
-      gameObjects.push(gr);
-      gameObjects.push(new MurrioWin({ pos: murrio.pos }));
-      playSound('gameMusic', true)
-      grandpa.done = true;
-      victoryTile.done = true;
+      hasWon = true
+      // spela upp win-grejer here!!!
+      
+      
     }
 
     if (isOfTypes(gameObject, other, Murrio, Cloud)) {
@@ -771,6 +788,7 @@ define('app/game', [
             })
             gameObjects.push(tile)
           break;
+          
           case 6:
             cloud = new Cloud({
               pos: {
@@ -779,6 +797,15 @@ define('app/game', [
               },
             })
             gameObjects.push(cloud)
+          break;
+          case 7:
+            var victoryTile = new VictoryTile({
+              pos: {
+                x: colIdx * TILE_SIZE,
+                y: rowIdx * TILE_SIZE
+              }
+            })
+            gameObjects.push(victoryTile)
           break;
           case 8:
             var cloud1 = new Decor({
@@ -958,6 +985,10 @@ define('app/game', [
     init: init,
     tick: function() {
       endConditions();
+      if (hasWon) {
+
+        return 
+      } 
       _.each(gameObjects, function (gameObject) {
         gameObject.tick();
       });
