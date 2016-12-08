@@ -737,7 +737,7 @@ define('app/game', [
       _.each(gameObjects, function (gameObject) {
         gameObject.tick();
       });
-      scroller.tick();
+      // scroller.tick();
 
       gameObjects = gameObjects.filter(function (gameObject) {
         return !gameObject.markedForRemoval
