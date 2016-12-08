@@ -127,7 +127,7 @@ define('app/game', [
 
       //Collision with edge of map
       if (nextPosition.x <= 0) {
-        nextPosition.x = scroller.getScreenOffset() + 1;
+        nextPosition.x = 1;
         this.velocity.x = 0;
       } else if (nextPosition.x >= canvasWidth - this.tileWidth * TILE_SIZE) {
         nextPosition.x = canvasWidth - this.tileWidth * TILE_SIZE - 1
@@ -305,6 +305,7 @@ define('app/game', [
       //this.turn_right_detector.pos.x += modifier
 
       var collisions = detectCollision(this);
+
       var tiles_touched = 0
       _.each(collisions, function(collision) {
         if (collision instanceof Tile) {tiles_touched += 1}
@@ -576,12 +577,19 @@ define('app/game', [
       victoryTile.done = true;
     }
 
-    if (isOfTypes(gameObject, other, Murrio, Spike)) {
+    if (isOfTypes(gameObject, other, Murrio, Enemy)) {
       var murrio = getOfType(gameObject, other, Murrio);
+      playSound('die');
       murrio.destroy();
-      gameObjects.push(new GameRestarter());
-      gameObjects.push(new MurrioDeathAnimation({ pos: murrio.pos }));
-      playSound('gameMusic', true)
+      var deathconfig = {
+        pos: {
+          x: murrio.pos.x,
+          y: murrio.pos.y
+        }
+      }
+      gameObjects.push(new MurrioDeathAnimation(deathconfig));
+
+      //playSound('gameMusic', true)
 
       _.each(new Array(20), function() {
         var particleSettings = {
@@ -627,6 +635,14 @@ define('app/game', [
       _.each(collisions, function(collision) { resolveCollision(gameObject, collision) });
       if (fromTop) {
         gameObject.pos.y = collisions[0].pos.y - (gameObject.tileHeight || 1) * TILE_SIZE;
+
+        var item = collisions[0]
+        if (item instanceof Tile && item.pos.y < gameObject.currentTileLevel) {
+
+          scroller.screenOffset -= gameObject.currentTileLevel - item.pos.y
+          gameObject.currentTileLevel = item.pos.y
+
+        }
 
       } else {
         // console.log('SLOG I HUVET!!')
@@ -826,6 +842,21 @@ define('app/game', [
         }
       })
     })
+
+    scroller.screenOffset = map.length * TILE_SIZE - canvasHeight
+
+    var lowestTile
+    gameObjects.forEach(function (gob) {
+      if (lowestTile) {
+        if (gob.pos.y > lowestTile.pos.y) {
+          lowestTile = gob
+        }
+      } else {
+        lowestTile = gob
+      }
+    })
+
+    murrio.currentTileLevel = lowestTile.pos.y
   }
 
   function playerAlive() {
@@ -852,11 +883,13 @@ define('app/game', [
 
     gameObjects = []
 
-    loadMap(map.getMap()[currentMapIdx]);
-
     playSound('gameMusic', false, true)
 
     scroller = new ScreenScroller();
+
+    loadMap(map.getMap()[currentMapIdx]);
+
+    actualScreenOffset = scroller.screenOffset
   }
 
   window.addEventListener("keydown", function(e) {
@@ -885,6 +918,8 @@ define('app/game', [
     }
   })
 
+  var actualScreenOffset
+
   return {
     init: init,
     tick: function() {
@@ -902,7 +937,10 @@ define('app/game', [
       renderingContext.drawImage(images.sky,0,0)
 
       renderingContext.save();
-      renderingContext.translate(0, -scroller.getScreenOffset());
+      if (actualScreenOffset > scroller.screenOffset) {
+        actualScreenOffset--
+      }
+      renderingContext.translate(0, -actualScreenOffset);
       _.each(gameObjects, function (gameObject) {
         if (gameObject instanceof Decor) gameObject.draw(renderingContext)
       })
