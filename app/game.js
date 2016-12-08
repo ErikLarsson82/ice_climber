@@ -371,7 +371,6 @@ define('app/game', [
         if (collision instanceof Tile) {tiles_touched += 1}
         if (collision instanceof Hacka) {
           this.destroy()
-          playSound('enemy_killed')
         }
       }.bind(this))
 
@@ -386,9 +385,6 @@ define('app/game', [
       }
     }
     draw(renderingContext) {
-      //renderingContext.fillStyle = "#FF0000";
-      //renderingContext.fillRect(this.pos.x, this.pos.y, (this.tileWidth || 1) * TILE_SIZE, (this.tileHeight || 1) * TILE_SIZE);
-
       renderingContext.save()
       renderingContext.translate(this.pos.x - (TILE_SIZE/2), this.pos.y - TILE_SIZE * 2);
       if (this.direction) {
@@ -397,6 +393,27 @@ define('app/game', [
       }
       this.spritesheet.draw(renderingContext);
       renderingContext.restore();
+    }
+
+    destroy(){
+      super.destroy()
+      playSound('enemy_killed')
+      _.each(new Array(20), function() {
+        var particleSettings = {
+          pos: {
+            x: this.pos.x + (Math.random() * 2),
+            y: this.pos.y + (Math.random() * 2),
+          },
+          velocity: {
+            x: (Math.random() - 0.5) * 5,
+            y: -(Math.random() - 0.5) * 5,
+          },
+          image: images.particleSpike,
+          lifetime: 80
+        }
+        var particle = new Particle(particleSettings);
+        gameObjects.push(particle);
+      }.bind(this))
     }
   }
 
