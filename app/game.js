@@ -84,7 +84,7 @@ define('app/game', [
       this.tileHeight = 2.99999
 
       var spriteConfig = {
-        frames: [200, 200, 200],
+        frames: [200, 200, 200, 200, 200],
         x: 0,
         y: 0,
         width: 64,
