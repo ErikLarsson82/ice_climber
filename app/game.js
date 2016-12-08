@@ -415,27 +415,10 @@ define('app/game', [
         var itemHeight = (item.tileHeight || 1) * TILE_SIZE
         var itemWidth = (item.tileWidth || 1) * TILE_SIZE
 
-        var itemArea = itemWidth * itemHeight
-        var whoArea = whoWidth * whoHeight
-
-        if (whoArea > itemArea) {
-          var tmp = who
-          who = item
-          item = tmp
-
-          tmp = whoWidth
-          whoWidth = itemWidth
-          itemWidth = whoWidth
-
-          tmp = whoHeight
-          whoHeight = itemHeight
-          itemHeight = whoHeight
-        }
-
-        const conditionLeftWithinWidth = who.pos.x > item.pos.x && who.pos.x < item.pos.x + itemWidth
-        const conditionRightWithinWidth = who.pos.x + whoWidth > item.pos.x && who.pos.x + whoWidth < item.pos.x + itemWidth
-        const conditionTopWithinHeight = who.pos.y > item.pos.y && who.pos.y < item.pos.y + itemHeight
-        const conditionBottomWithinHeight = who.pos.y + whoHeight > item.pos.y && who.pos.y + whoHeight < item.pos.y + itemHeight
+        const conditionLeftWithinWidth = item.pos.x > who.pos.x && item.pos.x < who.pos.x + whoWidth
+        const conditionRightWithinWidth = item.pos.x + itemWidth > who.pos.x && item.pos.x + itemWidth < who.pos.x + whoWidth
+        const conditionTopWithinHeight = item.pos.y > who.pos.y && item.pos.y < who.pos.y + whoHeight
+        const conditionBottomWithinHeight = item.pos.y + itemHeight > who.pos.y && item.pos.y + whoHeight < who.pos.y + whoHeight
         const condition5 = !item.markedForRemoval
         const condition6 = !(item instanceof Particle)
         const condition7 = !(item instanceof Grandpa)
