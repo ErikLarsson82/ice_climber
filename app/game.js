@@ -177,7 +177,7 @@ define('app/game', [
       if (this.pos.y > scroller.screenOffset + canvasHeight) {
         playSound('die')
         init()
-      } 
+      }
     }
     jump() {
       if (!this.touchingGround || !this.jumpButtonReleased) return;
@@ -1244,7 +1244,11 @@ define('app/game', [
       });
     },
     draw: function (renderingContext) {
-      renderingContext.drawImage(images.sky,0,0)
+      var offsetArray = utils.interpolateLinear(1344 + 258 + 10, 0, -256)
+      var offset = offsetArray[actualScreenOffset];
+      if (actualScreenOffset <= 0)
+        offset = 0;
+      renderingContext.drawImage(images.sky,0,offset)
 
       renderingContext.save();
       if (actualScreenOffset >= scroller.screenOffset) {
