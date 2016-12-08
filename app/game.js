@@ -173,6 +173,11 @@ define('app/game', [
         this.direction = true
       }
       super.tick();
+
+      if (this.pos.y > scroller.screenOffset + canvasHeight) {
+        playSound('die')
+        init()
+      } 
     }
     jump() {
       if (!this.touchingGround || !this.jumpButtonReleased) return;
