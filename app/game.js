@@ -38,6 +38,7 @@ define('app/game', [
   let grandpa;
   let victoryTile;
   let currentMapIdx = 0;
+  let hasWon = false
 
   function debugWriteButtons(pad) {
         if (!DEBUG_WRITE_BUTTONS) return;
@@ -431,24 +432,24 @@ define('app/game', [
       this.image = images.pipe
     }
     tick() {
-      if (!this.done) {
-        if (Math.random() > 0.0001) {
-          var particleSettings = {
-            pos: {
-              x: victoryTile.pos.x + (Math.random() * TILE_SIZE / 2) + TILE_SIZE / 4,
-              y: victoryTile.pos.y - 4,
-            },
-            velocity: {
-              x: (Math.random() - 0.5) * 1.5,
-              y: -1 - (Math.random()) * 8,
-            },
-            image: images.lavaparticle,
-            lifetime: 90,
-          }
-          var particle = new Particle(particleSettings);
-          gameObjects.push(particle);
-        }
-      }
+      // if (!this.done) {
+      //   if (Math.random() > 0.0001) {
+      //     var particleSettings = {
+      //       pos: {
+      //         x: victoryTile.pos.x + (Math.random() * TILE_SIZE / 2) + TILE_SIZE / 4,
+      //         y: victoryTile.pos.y - 4,
+      //       },
+      //       velocity: {
+      //         x: (Math.random() - 0.5) * 1.5,
+      //         y: -1 - (Math.random()) * 8,
+      //       },
+      //       image: images.lavaparticle,
+      //       lifetime: 90,
+      //     }
+      //     var particle = new Particle(particleSettings);
+      //     gameObjects.push(particle);
+      //   }
+      // }
     }
   }
 
@@ -606,14 +607,10 @@ define('app/game', [
     }
     if (isOfTypes(gameObject, other, Murrio, VictoryTile)) {
       var murrio = getOfType(gameObject, other, Murrio);
-      murrio.destroy();
-      var gr = new GameRestarter()
-      gr.done = true;
-      gameObjects.push(gr);
-      gameObjects.push(new MurrioWin({ pos: murrio.pos }));
-      playSound('gameMusic', true)
-      grandpa.done = true;
-      victoryTile.done = true;
+      hasWon = true
+      // spela upp win-grejer here!!!
+      
+      
     }
 
     if (isOfTypes(gameObject, other, Murrio, Enemy)) {
@@ -774,6 +771,15 @@ define('app/game', [
               image: images.tile3
             })
             gameObjects.push(tile)
+          break;
+          case 6:
+            var victoryTile = new VictoryTile({
+              pos: {
+                x: colIdx * TILE_SIZE,
+                y: rowIdx * TILE_SIZE
+              }
+            })
+            gameObjects.push(victoryTile)
           break;
           case 7:
             grandpa = new Grandpa({
@@ -963,6 +969,10 @@ define('app/game', [
     init: init,
     tick: function() {
       endConditions();
+      if (hasWon) {
+
+        return 
+      } 
       _.each(gameObjects, function (gameObject) {
         gameObject.tick();
       });
