@@ -215,16 +215,6 @@ define('app/game', [
       }
     }
     draw(renderingContext) {
-
-      //Debug för att se vart man hackar
-      super.draw(renderingContext)
-      var x = this.pos.x
-      if (this.direction) {
-        x += this.tileWidth * TILE_SIZE
-      }
-      renderingContext.fillStyle = "#FF0000"
-      renderingContext.fillRect(x, this.pos.y, 5, 5)
-
       if (this.isHackaMonsterPlaying) {
         renderingContext.save()
         renderingContext.translate(this.pos.x, this.pos.y);
