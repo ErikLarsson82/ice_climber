@@ -1003,7 +1003,7 @@ define('app/game', [
                 y: rowIdx * TILE_SIZE
               },
               direction: false,
-              speed: 1,
+              speed: 2,
               image: images.cloud_center
             })
             gameObjects.push(cloud)
