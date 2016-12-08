@@ -82,6 +82,7 @@ define('app/game', [
       this.direction = false; //True is left, false is right
       this.tileWidth = 1.99999
       this.tileHeight = 2.99999
+      this.moved_by_cloud = false
 
       this.isHackaMonsterPlaying = false
 
@@ -97,6 +98,7 @@ define('app/game', [
       this.spritesheet = SpriteSheet.new(images.climber_walk, spriteConfig)
     }
     tick() {
+      this.moved_by_cloud = false
       const pad = userInput.getInput(0)
       var acceleration = {
         x: 0,
@@ -344,7 +346,7 @@ define('app/game', [
   }
 
 
-  class Cloud5 extends GameObject {
+  class Cloud extends GameObject {
     constructor(config) {
       super(config)
       this.direction = true; //true is left, false is right
@@ -367,7 +369,13 @@ define('app/game', [
       }
       this.pos = nextPosition;
 
-      //TODO if touching murrio move murrio with cloud
+      //stop murrio from going though clouds from the side
+      var collisions = detectCollision(this);
+      _.each(collisions, function(collision) {
+        if (collision instanceof Murrio) {
+          collision.pos.x += modifier
+        }
+      })
 
       if (this.pos.x < -TILE_SIZE) {
         this.pos.x = 1024;
@@ -593,6 +601,15 @@ define('app/game', [
       victoryTile.done = true;
     }
 
+    if (isOfTypes(gameObject, other, Murrio, Cloud)) {
+      var murrio = getOfType(gameObject, other, Murrio);
+      if (murrio.moved_by_cloud === false) { 
+        var modifier = (other.direction) ? (other.speed*-1) : other.speed;
+        murrio.pos.x += modifier
+        murrio.moved_by_cloud = true
+      }
+    }
+
     if (isOfTypes(gameObject, other, Murrio, Enemy)) {
       var murrio = getOfType(gameObject, other, Murrio);
       playSound('die');
@@ -680,8 +697,10 @@ define('app/game', [
 
         if (isPointInsideRect(hackPointX, oldGmaeObjectY, item.pos.x, item.pos.y, itemWidth, itemHeight)) {
           // hakc it!
-          playSound('break_block')
-          item.destroy();
+          if (!(item instanceof Cloud)) {
+            playSound('break_block')
+            item.destroy();
+          }
         }
 
       }
@@ -753,13 +772,13 @@ define('app/game', [
             gameObjects.push(tile)
           break;
           case 6:
-            cloud5 = new Cloud5({
+            cloud = new Cloud({
               pos: {
                 x: colIdx * TILE_SIZE,
                 y: rowIdx * TILE_SIZE
               },
             })
-            gameObjects.push(cloud5)
+            gameObjects.push(cloud)
           break;
           case 8:
             var cloud1 = new Decor({
