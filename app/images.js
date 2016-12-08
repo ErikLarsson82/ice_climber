@@ -34,6 +34,9 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
   var tile = new Image();
   tile.src = "./assets/images/tile.png";
 
+  var tile2 = new Image();
+  tile2.src = "./assets/images/tile2.png";
+
   var tile3 = new Image();
   tile3.src = "./assets/images/tile3.png";
 
@@ -53,12 +56,18 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
   var spike = new Image();
   spike.src = "./assets/images/spikmurr_animation.png";
 
+  var climber_walk = new Image();
+  climber_walk.src = "./assets/images/climber_walk.png";
+
+  var climber_jump = new Image();
+  climber_jump.src = "./assets/images/climber_jump.png";
+
   var spike_blueprint = {
-    frames: [200, 200],
+    frames: [200, 200, 200],
     x: 0,
     y: 0,
-    width: 48,
-    height: 48,
+    width: 64,
+    height: 96,
     restart: true,
     autoPlay: true,
   }
@@ -109,10 +118,13 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
   particleSpike.src = "./assets/images/particleSpike.png";
 
   return {
+    climber_jump: climber_jump,
+    climber_walk: climber_walk,
     idle: idle,
     walk_animation: walk_animation,
     jump: jump,
     tile: tile,
+    tile2: tile2,
     tile3: tile3,
     lava: lava,
     pipe: pipe,

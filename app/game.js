@@ -24,7 +24,7 @@ define('app/game', [
 
   const DEBUG_WRITE_BUTTONS = false;
   const DEBUG_DISABLE_GRAPHICS = false;
-  const DEBUG_DRAW_BOXES = !false;
+  const DEBUG_DRAW_BOXES = false;
   const DEBUG_HOTKEYS = true;
   let DEBUG_START_OFFSET = 0;
 
@@ -84,15 +84,15 @@ define('app/game', [
       this.tileHeight = 2.99999
 
       var spriteConfig = {
-        frames: [200, 200],
+        frames: [200, 200, 200, 200, 200],
         x: 0,
         y: 0,
-        width: 48,
-        height: 48,
+        width: 64,
+        height: 96,
         restart: true,
         autoPlay: true,
       }
-      this.spritesheet = SpriteSheet.new(images.spike, spriteConfig)
+      this.spritesheet = SpriteSheet.new(images.climber_walk, spriteConfig)
     }
     tick() {
       const pad = userInput.getInput(0)
@@ -145,7 +145,8 @@ define('app/game', [
       this.touchingGround = false;
       handleMove(this, nextPosition, callbackX.bind(this), callbackY.bind(this));
 
-      this.spritesheet.tick(Math.round(1000/60 * Math.abs(this.velocity.x)));
+      var tickspeed = Math.round(1000/60 * Math.abs(this.velocity.x));
+      this.spritesheet.tick((tickspeed === 0) ? 0.00001 : tickspeed); // 0 gives spasms
 
       if (this.velocity.x < -0.1) {
         this.direction = false
@@ -163,9 +164,9 @@ define('app/game', [
       this.jumpButtonReleased = false;
     }
     draw(renderingContext) {
-      
+
       //Debug för att se vart man hackar
-      super.draw(renderingContext)
+      //super.draw(renderingContext)
       var x = this.pos.x
       if (this.direction) {
         x += this.tileWidth * TILE_SIZE
@@ -179,12 +180,19 @@ define('app/game', [
         renderingContext.translate(this.pos.x, this.pos.y);
         if (!this.direction) {
           renderingContext.scale(-1, 1);
-          renderingContext.translate(-TILE_SIZE, 0);
+          renderingContext.translate(-TILE_SIZE * 2, 0);
         }
         this.spritesheet.draw(renderingContext);
         renderingContext.restore();
       } else {
-        renderingContext.drawImage(images.pipe, this.pos.x, this.pos.y);
+        renderingContext.save();
+        renderingContext.translate(this.pos.x, this.pos.y);
+        if (!this.direction) {
+          renderingContext.scale(-1, 1);
+          renderingContext.translate(-TILE_SIZE * 2, 0);
+        }
+        renderingContext.drawImage(images.climber_jump, 0, 0);
+        renderingContext.restore();
       }
     }
   }
@@ -297,15 +305,20 @@ define('app/game', [
       //this.turn_right_detector.pos.x += modifier
 
       var collisions = detectCollision(this);
-      
-      if (collisions.length == 1) {
+
+      var tiles_touched = 0
+      _.each(collisions, function(collision) {
+        if (collision instanceof Tile) {tiles_touched += 1}
+      })
+
+      if (tiles_touched == 1) {
         if (this.direction === false) {
           this.direction = true
         } else {
           this.direction = false
         }
-      } else if (collisions.length == 0) {
-          //enemy should die
+      } else if (tiles_touched == 0) {
+          //enemy should die or fall?
           this.destroy()
       }
     }
@@ -683,7 +696,7 @@ define('app/game', [
                 x: colIdx * TILE_SIZE,
                 y: rowIdx * TILE_SIZE
               },
-              // image: images.tile
+              image: images.tile
             })
             gameObjects.push(tile)
           break;
@@ -697,16 +710,17 @@ define('app/game', [
             })
             gameObjects.push(enemy)
           break;
-          case 5:
-            victoryTile = new VictoryTile({
+          case 4:
+            var tile = new Tile({
               pos: {
                 x: colIdx * TILE_SIZE,
                 y: rowIdx * TILE_SIZE
-              }
+              },
+              image: images.tile2
             })
-            gameObjects.push(victoryTile)
+            gameObjects.push(tile)
           break;
-          case 6:
+          case 5:
             var tile = new Tile({
               pos: {
                 x: colIdx * TILE_SIZE,
