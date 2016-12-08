@@ -580,7 +580,7 @@ define('app/game', [
       console.log('SIDE COLLISION')
       _.each(collisions, function(collision) { resolveCollision(gameObject, collision) });
       if (fromLeft) {
-        gameObject.pos.x = collisions[0].pos.x - (collisions[0].tileWidth || 1) * TILE_SIZE;
+        gameObject.pos.x = collisions[0].pos.x - (gameObject.tileWidth || 1) * TILE_SIZE;
       } else {
         gameObject.pos.x = collisions[0].pos.x + (collisions[0].tileWidth || 1) * TILE_SIZE;
       }
@@ -589,6 +589,9 @@ define('app/game', [
 
     gameObject.pos.y = newPos.y;
     var collisions = detectCollision(gameObject);
+    if (gameObject.direction) {
+      collisions = collisions.reverse()
+    }
     // console.log(collisions)
     if (collisions.length > 0) {
       _.each(collisions, function(collision) { resolveCollision(gameObject, collision) });
