@@ -266,27 +266,6 @@ define('app/game', [
       this.speed = 0.5;
       this.tileWidth = 1.0001
       this.tileHeight = 1.0001
-
-      // this.turn_left_detector = new GameObject({
-      //   pos: {
-      //     x: this.pos.x + TILE_SIZE + 1,
-      //     y: this.pos.y + TILE_SIZE + 1
-      //   },
-      // })
-      // this.turn_left_detector.tileWidth = 0.1
-      // this.turn_left_detector.tileHeight = 0.1
-
-      //  this.turn_right_detector = new GameObject({
-      //   pos: {
-      //     x: this.pos.x - 6,
-      //     y: this.pos.y + TILE_SIZE + 1
-      //   },
-      // })
-      // this.turn_right_detector.tileWidth = 0.1
-      // this.turn_right_detector.tileHeight = 0.1
-
-      // gameObjects.push(this.turn_left_detector)
-      // gameObjects.push(this.turn_right_detector)
     }
     tick() {
       if (!this.direction && this.distance > this.totalWalkDistance) {
@@ -301,8 +280,6 @@ define('app/game', [
         y: this.pos.y
       }
       this.pos = nextPosition;
-      //this.turn_left_detector.pos.x += modifier
-      //this.turn_right_detector.pos.x += modifier
 
       var collisions = detectCollision(this);
       var tiles_touched = 0
@@ -317,7 +294,6 @@ define('app/game', [
           this.direction = false
         }
       } else if (tiles_touched == 0) {
-          //enemy should die or fall?
           this.destroy()
       }
     }
@@ -328,16 +304,16 @@ define('app/game', [
   }
 
 
-  class Spike extends GameObject {
+  class Cloud5 extends GameObject {
     constructor(config) {
       super(config)
-      this.image = images.grandpa;
-      this.direction = "left";
-      this.speed = 0.3;
-      this.spritesheet = config.sprite;
+      this.direction = true; //true is left, false is right
+      this.speed = 1;
+      this.tileWidth = 1
+      this.tileHeight = 1
+
     }
     tick() {
-      this.spritesheet.tick(1000/60);
       if (!this.direction && this.distance > this.totalWalkDistance) {
         this.direction = true;
       } else if (this.direction && this.distance < 0) {
@@ -350,16 +326,17 @@ define('app/game', [
         y: this.pos.y
       }
       this.pos = nextPosition;
+
+      //TODO if touching murrio move murrio with cloud
+
+      if (this.pos.x < -TILE_SIZE) {
+        this.pos.x = 1024;
+      }
+
     }
     draw(renderingContext) {
-      renderingContext.save();
-      renderingContext.translate(this.pos.x, this.pos.y)
-      if (this.direction) {
-        renderingContext.scale(-1, 1)
-        renderingContext.translate(-TILE_SIZE, 0)
-      }
-      this.spritesheet.draw(renderingContext);
-      renderingContext.restore();
+      renderingContext.fillStyle = "#00FF00";
+      renderingContext.fillRect(this.pos.x, this.pos.y, (this.tileWidth || 1) * TILE_SIZE, (this.tileHeight || 1) * TILE_SIZE);
     }
   }
 
@@ -727,15 +704,14 @@ define('app/game', [
             })
             gameObjects.push(tile)
           break;
-          case 7:
-            grandpa = new Grandpa({
+          case 6:
+            cloud5 = new Cloud5({
               pos: {
                 x: colIdx * TILE_SIZE,
                 y: rowIdx * TILE_SIZE
               },
-              image: images.grandpa
             })
-            gameObjects.push(grandpa)
+            gameObjects.push(cloud5)
           break;
           case 8:
             var cloud1 = new Decor({
