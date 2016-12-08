@@ -82,6 +82,17 @@ define('app/game', [
       this.direction = false; //True is left, false is right
       this.tileWidth = 1.99999
       this.tileHeight = 2.99999
+
+      var spriteConfig = {
+        frames: [200, 200],
+        x: 0,
+        y: 0,
+        width: 48,
+        height: 48,
+        restart: true,
+        autoPlay: true,
+      }
+      this.spritesheet = SpriteSheet.new(images.spike, spriteConfig)
     }
     tick() {
       const pad = userInput.getInput(0)
@@ -131,7 +142,7 @@ define('app/game', [
       this.touchingGround = false;
       handleMove(this, nextPosition, callbackX.bind(this), callbackY.bind(this));
 
-      this.walk_animation.tick(Math.round(1000/60 * Math.abs(this.velocity.x)));
+      this.spritesheet.tick(Math.round(1000/60 * Math.abs(this.velocity.x)));
 
       this.direction = (this.velocity.x > 0);
       super.tick();
@@ -145,36 +156,28 @@ define('app/game', [
       this.jumpButtonReleased = false;
     }
     draw(renderingContext) {
+      /*
+      //Debug för att se vart man hackar
       super.draw(renderingContext)
       var x = this.pos.x
       if (this.direction) {
         x += this.tileWidth * TILE_SIZE
       }
       renderingContext.fillStyle = "#FF0000"
-      renderingContext.fillRect(x, this.pos.y, 5, 5)
-      // if (Math.abs(this.velocity.x) > 1 && this.touchingGround) {
-      //   renderingContext.save()
-      //   renderingContext.translate(this.pos.x, this.pos.y);
-      //   if (!this.direction) {
-      //     renderingContext.scale(-1, 1);
-      //     renderingContext.translate(-TILE_SIZE, 0);
-      //   }
-      //   this.walk_animation.draw(renderingContext);
-      //   renderingContext.restore();
-      // }  else {
-      //   renderingContext.save();
-      //   renderingContext.translate(this.pos.x, this.pos.y);
-      //   if (!this.direction) {
-      //     renderingContext.scale(-1, 1);
-      //     renderingContext.translate(-TILE_SIZE, 0);
-      //   }
-      //   if (this.touchingGround) {
-      //     renderingContext.drawImage(images.idle, 0, 0)
-      //   } else {
-      //     renderingContext.drawImage(images.jump, 0, 0)
-      //   }
-      //   renderingContext.restore();
-      // }
+      renderingContext.fillRect(x, this.pos.y, 5, 5)*/
+
+      if (this.touchingGround) {
+        renderingContext.save()
+        renderingContext.translate(this.pos.x, this.pos.y);
+        if (!this.direction) {
+          renderingContext.scale(-1, 1);
+          renderingContext.translate(-TILE_SIZE, 0);
+        }
+        this.spritesheet.draw(renderingContext);
+        renderingContext.restore();
+      } else {
+        renderingContext.drawImage(images.pipe, this.pos.x, this.pos.y);
+      }
     }
   }
 
