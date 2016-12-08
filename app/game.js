@@ -184,10 +184,13 @@ define('app/game', [
       if (this.isHackaMonsterPressed && !this.isHackaMonsterPlaying) {
         this.isHackaMonsterPlaying = true
 
-        var hackaX = this.direction ? this.pos.x + this.tileWidth * TILE_SIZE : this.pos.x - TILE_SIZE
-        var hackaY = this.pos.y + TILE_SIZE
-        var hacka = new Hacka(hackaX, hackaY)
-        gameObjects.push(hacka)
+        var hacka;
+        setTimeout(function() {
+          var hackaX = this.direction ? this.pos.x + this.tileWidth * TILE_SIZE : this.pos.x - TILE_SIZE
+          var hackaY = this.pos.y + TILE_SIZE
+          hacka = new Hacka(hackaX, hackaY)
+          gameObjects.push(hacka)
+        }.bind(this), 180)
 
         this.swing_animation = SpriteSheet.new(images.climber_swing_sheet, {
           frames: [50, 90, 150, 200],
@@ -427,8 +430,9 @@ define('app/game', [
 
     }
     draw(renderingContext) {
-      renderingContext.fillStyle = "#00FF00";
-      renderingContext.fillRect(this.pos.x, this.pos.y, (this.tileWidth || 1) * TILE_SIZE, (this.tileHeight || 1) * TILE_SIZE);
+      //renderingContext.fillStyle = "#00FF00";
+      //renderingContext.fillRect(this.pos.x, this.pos.y, (this.tileWidth || 1) * TILE_SIZE, (this.tileHeight || 1) * TILE_SIZE);
+      renderingContext.drawImage(this.image, this.pos.x, this.pos.y)
     }
   }
 
@@ -637,13 +641,13 @@ define('app/game', [
       var murrio = getOfType(gameObject, other, Murrio);
       hasWon = true
       // spela upp win-grejer here!!!
-      
-      
+
+
     }
 
     if (isOfTypes(gameObject, other, Murrio, Cloud)) {
       var murrio = getOfType(gameObject, other, Murrio);
-      if (murrio.moved_by_cloud === false) { 
+      if (murrio.moved_by_cloud === false) {
         var modifier = (other.direction) ? (other.speed*-1) : other.speed;
         murrio.pos.x += modifier
         murrio.moved_by_cloud = true
@@ -811,13 +815,70 @@ define('app/game', [
             })
             gameObjects.push(tile)
           break;
-          
-          case 6:
+
+          case "a":
             cloud = new Cloud({
               pos: {
                 x: colIdx * TILE_SIZE,
                 y: rowIdx * TILE_SIZE
               },
+              direction: true,
+              image: images.cloud_left
+            })
+            gameObjects.push(cloud)
+          break;
+          case "b":
+            cloud = new Cloud({
+              pos: {
+                x: colIdx * TILE_SIZE,
+                y: rowIdx * TILE_SIZE
+              },
+              direction: true,
+              image: images.cloud_center
+            })
+            gameObjects.push(cloud)
+          break;
+          case "c":
+            cloud = new Cloud({
+              pos: {
+                x: colIdx * TILE_SIZE,
+                y: rowIdx * TILE_SIZE
+              },
+              direction: true,
+              image: images.cloud_right
+            })
+            gameObjects.push(cloud)
+          break;
+          case "d":
+            cloud = new Cloud({
+              pos: {
+                x: colIdx * TILE_SIZE,
+                y: rowIdx * TILE_SIZE
+              },
+              direction: false,
+              image: images.cloud_left
+            })
+            gameObjects.push(cloud)
+          break;
+          case "e":
+            cloud = new Cloud({
+              pos: {
+                x: colIdx * TILE_SIZE,
+                y: rowIdx * TILE_SIZE
+              },
+              direction: false,
+              image: images.cloud_center
+            })
+            gameObjects.push(cloud)
+          break;
+          case "f":
+            cloud = new Cloud({
+              pos: {
+                x: colIdx * TILE_SIZE,
+                y: rowIdx * TILE_SIZE
+              },
+              direction: false,
+              image: images.cloud_right
             })
             gameObjects.push(cloud)
           break;
@@ -1010,8 +1071,8 @@ define('app/game', [
       endConditions();
       if (hasWon) {
 
-        return 
-      } 
+        return
+      }
       _.each(gameObjects, function (gameObject) {
         gameObject.tick();
       });
