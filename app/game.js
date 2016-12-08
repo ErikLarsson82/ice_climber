@@ -144,7 +144,14 @@ define('app/game', [
       this.touchingGround = false;
       this.jumpButtonReleased = false;
     }
-    // draw(renderingContext) {
+    draw(renderingContext) {
+      super.draw(renderingContext)
+      var x = this.pos.x
+      if (this.direction) {
+        x += this.tileWidth * TILE_SIZE
+      }
+      renderingContext.fillStyle = "#FF0000"
+      renderingContext.fillRect(x, this.pos.y, 5, 5)
       // if (Math.abs(this.velocity.x) > 1 && this.touchingGround) {
       //   renderingContext.save()
       //   renderingContext.translate(this.pos.x, this.pos.y);
@@ -168,7 +175,7 @@ define('app/game', [
       //   }
       //   renderingContext.restore();
       // }
-    // }
+    }
   }
 
   class MurrioDeathAnimation extends GameObject {
@@ -602,13 +609,12 @@ define('app/game', [
         var hackPointX = gameObject.pos.x
         // this.direction = false; //True is left, false is right
         if (gameObject.direction) {
-          hackPointX = gameObject.pos.x + gameObject.tileWidth
+          hackPointX = gameObject.pos.x + gameObject.tileWidth * TILE_SIZE
         }
         // var hackPointY = gameObject.pos.y
 
         if (isPointInsideRect(hackPointX, oldGmaeObjectY, item.pos.x, item.pos.y, itemWidth, itemHeight)) {
           // hakc it!
-          console.log('DESTRO')
           playSound('break_block')
           item.destroy();
         }
