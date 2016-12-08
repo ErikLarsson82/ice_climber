@@ -147,7 +147,11 @@ define('app/game', [
 
       this.spritesheet.tick(Math.round(1000/60 * Math.abs(this.velocity.x)));
 
-      this.direction = (this.velocity.x > 0);
+      if (this.velocity.x < -0.1) {
+        this.direction = false
+      } else if (this.velocity.x > 0.1) {
+        this.direction = true
+      }
       super.tick();
     }
     jump() {
@@ -159,7 +163,7 @@ define('app/game', [
       this.jumpButtonReleased = false;
     }
     draw(renderingContext) {
-      /*
+      
       //Debug för att se vart man hackar
       super.draw(renderingContext)
       var x = this.pos.x
@@ -167,7 +171,8 @@ define('app/game', [
         x += this.tileWidth * TILE_SIZE
       }
       renderingContext.fillStyle = "#FF0000"
-      renderingContext.fillRect(x, this.pos.y, 5, 5)*/
+      renderingContext.fillRect(x, this.pos.y, 5, 5)
+
 
       if (this.touchingGround) {
         renderingContext.save()
