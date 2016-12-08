@@ -275,10 +275,10 @@ define('app/game', [
       this.color = "yellow";
       this.image = images.dead;
       this.rotation = 0;
-      this.countdown = 140;
+      this.countdown = 120;
     }
     tick() {
-      this.rotation += 0.1;
+      this.rotation += 0.15;
       this.countdown--;
 
       if (this.countdown <= 0) {
@@ -289,7 +289,7 @@ define('app/game', [
       renderingContext.save();
       renderingContext.translate(this.pos.x + TILE_SIZE, this.pos.y + (TILE_SIZE * 2));
       renderingContext.rotate(this.rotation);
-      renderingContext.drawImage(images.climber_jump, -TILE_SIZE, TILE_SIZE * -2)
+      renderingContext.drawImage(images.climber_dead, -TILE_SIZE, TILE_SIZE * -2)
       renderingContext.restore();
     }
   }

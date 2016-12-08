@@ -5,6 +5,9 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
   var walk_animation_sprite = new Image();
   walk_animation_sprite.src = "./assets/images/walk_animation.png";
 
+  var climber_dead = new Image();
+  climber_dead.src = "./assets/images/climber_dead.png";
+
   var cloud_left = new Image();
   cloud_left.src = "./assets/images/cloud_left.png";
 
@@ -139,6 +142,7 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
   victory_text.src = "./assets/images/victory_text.png"
 
   return {
+    climber_dead: climber_dead,
     cloud_left: cloud_left,
     cloud_center: cloud_center,
     cloud_right: cloud_right,
