@@ -185,7 +185,7 @@ define('app/game', [
     hackaSlafsa() {
       if (this.isHackaMonsterPressed && !this.isHackaMonsterPlaying) {
         this.isHackaMonsterPlaying = true
-
+        playSound('miss')
         var hacka;
         setTimeout(function() {
           var hackaX = this.direction ? this.pos.x + this.tileWidth * TILE_SIZE : this.pos.x - TILE_SIZE
@@ -366,6 +366,7 @@ define('app/game', [
         if (collision instanceof Tile) {tiles_touched += 1}
         if (collision instanceof Hacka) {
           this.destroy()
+          playSound('enemy_killed')
         }
       }.bind(this))
 
@@ -1120,8 +1121,8 @@ define('app/game', [
       endConditions();
       if (hasWon) {
         flag.tick()
-        return 
-      } 
+        return
+      }
       _.each(gameObjects, function (gameObject) {
         gameObject.tick();
       });
