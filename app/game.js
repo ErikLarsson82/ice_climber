@@ -396,8 +396,8 @@ define('app/game', [
   class Cloud extends GameObject {
     constructor(config) {
       super(config)
-      this.direction = true; //true is left, false is right
-      this.speed = 1;
+      this.direction = config.direction; //true is left, false is right
+      this.speed = config.speed;
       this.tileWidth = 1
       this.tileHeight = 1
 
@@ -424,8 +424,14 @@ define('app/game', [
         }
       })
 
-      if (this.pos.x < -TILE_SIZE) {
-        this.pos.x = 1024;
+      if (this.direction === true) {
+        if (this.pos.x < -TILE_SIZE) {
+          this.pos.x = 1024;
+        }
+      } else {
+        if (this.pos.x > 1024) {
+          this.pos.x = -TILE_SIZE;
+        }
       }
 
     }
@@ -714,7 +720,7 @@ define('app/game', [
         gameObject.pos.y = collisions[0].pos.y - (gameObject.tileHeight || 1) * TILE_SIZE;
 
         var item = collisions[0]
-        if (item instanceof Tile && item.pos.y < gameObject.currentTileLevel) {
+        if (item instanceof Tile || item instanceof Cloud && item.pos.y < gameObject.currentTileLevel) {
 
           scroller.screenOffset -= gameObject.currentTileLevel - item.pos.y
           gameObject.currentTileLevel = item.pos.y
@@ -816,6 +822,7 @@ define('app/game', [
             gameObjects.push(tile)
           break;
 
+          //slow cloud left
           case "a":
             cloud = new Cloud({
               pos: {
@@ -823,6 +830,7 @@ define('app/game', [
                 y: rowIdx * TILE_SIZE
               },
               direction: true,
+              speed: 1,
               image: images.cloud_left
             })
             gameObjects.push(cloud)
@@ -834,6 +842,7 @@ define('app/game', [
                 y: rowIdx * TILE_SIZE
               },
               direction: true,
+              speed: 1,
               image: images.cloud_center
             })
             gameObjects.push(cloud)
@@ -845,10 +854,12 @@ define('app/game', [
                 y: rowIdx * TILE_SIZE
               },
               direction: true,
+              speed: 1,
               image: images.cloud_right
             })
             gameObjects.push(cloud)
           break;
+          //slow cloud right
           case "d":
             cloud = new Cloud({
               pos: {
@@ -856,6 +867,7 @@ define('app/game', [
                 y: rowIdx * TILE_SIZE
               },
               direction: false,
+              speed: 1,
               image: images.cloud_left
             })
             gameObjects.push(cloud)
@@ -867,6 +879,7 @@ define('app/game', [
                 y: rowIdx * TILE_SIZE
               },
               direction: false,
+              speed: 1,
               image: images.cloud_center
             })
             gameObjects.push(cloud)
@@ -878,6 +891,81 @@ define('app/game', [
                 y: rowIdx * TILE_SIZE
               },
               direction: false,
+              speed: 1,
+              image: images.cloud_right
+            })
+            gameObjects.push(cloud)
+          break;
+          //fast cloud left
+          case "g":
+            cloud = new Cloud({
+              pos: {
+                x: colIdx * TILE_SIZE,
+                y: rowIdx * TILE_SIZE
+              },
+              direction: true,
+              speed: 2,
+              image: images.cloud_left
+            })
+            gameObjects.push(cloud)
+          break;
+          case "h":
+            cloud = new Cloud({
+              pos: {
+                x: colIdx * TILE_SIZE,
+                y: rowIdx * TILE_SIZE
+              },
+              direction: true,
+              speed: 2,
+              image: images.cloud_center
+            })
+            gameObjects.push(cloud)
+          break;
+          case "i":
+            cloud = new Cloud({
+              pos: {
+                x: colIdx * TILE_SIZE,
+                y: rowIdx * TILE_SIZE
+              },
+              direction: true,
+              speed: 2,
+              image: images.cloud_right
+            })
+            gameObjects.push(cloud)
+          break;
+          //fast cloud right
+          case "j":
+            cloud = new Cloud({
+              pos: {
+                x: colIdx * TILE_SIZE,
+                y: rowIdx * TILE_SIZE
+              },
+              direction: false,
+              speed: 2,
+              image: images.cloud_left
+            })
+            gameObjects.push(cloud)
+          break;
+          case "k":
+            cloud = new Cloud({
+              pos: {
+                x: colIdx * TILE_SIZE,
+                y: rowIdx * TILE_SIZE
+              },
+              direction: false,
+              speed: 1,
+              image: images.cloud_center
+            })
+            gameObjects.push(cloud)
+          break;
+          case "l":
+            cloud = new Cloud({
+              pos: {
+                x: colIdx * TILE_SIZE,
+                y: rowIdx * TILE_SIZE
+              },
+              direction: false,
+              speed: 2,
               image: images.cloud_right
             })
             gameObjects.push(cloud)
