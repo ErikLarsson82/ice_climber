@@ -286,15 +286,19 @@ define('app/game', [
       //this.turn_right_detector.pos.x += modifier
 
       var collisions = detectCollision(this);
-      console.log(collisions)
-      if (collisions.length == 1) {
+      var tiles_touched = 0
+      _.each(collisions, function(collision) {
+        if (collision instanceof Tile) {tiles_touched += 1}
+      })
+
+      if (tiles_touched == 1) {
         if (this.direction === false) {
           this.direction = true
         } else {
           this.direction = false
         }
-      } else if (collisions.length == 0) {
-          //enemy should die
+      } else if (tiles_touched == 0) {
+          //enemy should die or fall?
           this.destroy()
       }
     }
