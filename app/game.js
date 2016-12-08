@@ -173,11 +173,16 @@ define('app/game', [
         this.direction = true
       }
       super.tick();
+
+      if (this.pos.y > scroller.screenOffset + canvasHeight) {
+        playSound('die')
+        init()
+      } 
     }
     jump() {
       if (!this.touchingGround || !this.jumpButtonReleased) return;
       playSound('jump')
-      var jumpSpeed = -9.45 - Math.abs(this.velocity.x / 2);
+      var jumpSpeed = -10.4
       this.velocity.y = Math.max(-11, jumpSpeed);
       this.touchingGround = false;
       this.jumpButtonReleased = false;
@@ -689,7 +694,8 @@ define('app/game', [
       var victoryTile = getOfType(gameObject, other, VictoryTile);
       hasWon = true
       // spela upp win-grejer here!!!
-      console.log(victoryTile.pos)
+      playSound('gameMusic', true)
+      playSound('win_song')
       victoryTile.destroy()
 
       setTimeout(function () {
