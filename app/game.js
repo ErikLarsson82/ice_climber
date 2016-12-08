@@ -328,6 +328,7 @@ define('app/game', [
       this.speed = 0.5;
       this.tileWidth = 1.0001
       this.tileHeight = 1.0001
+      this.timeSinceLastSwitch = 0;
 
       this.spritesheet = SpriteSheet.new(images.enemy_walk, {
         frames: [200, 200, 200, 200],
@@ -341,10 +342,13 @@ define('app/game', [
     }
     tick() {
       this.spritesheet.tick(1000/60);
+      this.timeSinceLastSwitch++;
       if (!this.direction && this.distance > this.totalWalkDistance) {
         this.direction = true;
+        this.timeSinceLastSwitch = 0;
       } else if (this.direction && this.distance < 0) {
         this.direction = false;
+        this.timeSinceLastSwitch = 0;
       }
       var modifier = (this.direction) ? (this.speed*-1) : this.speed;
       this.distance += modifier;
@@ -367,8 +371,10 @@ define('app/game', [
       if (tiles_touched == 1) {
         if (this.direction === false) {
           this.direction = true
+          this.timeSinceLastSwitch = 0;
         } else {
           this.direction = false
+          this.timeSinceLastSwitch = 0;
         }
       } else if (tiles_touched == 0) {
           this.destroy()
@@ -377,7 +383,7 @@ define('app/game', [
     draw(renderingContext) {
       renderingContext.save()
       renderingContext.translate(this.pos.x - (TILE_SIZE/2), this.pos.y - TILE_SIZE * 2);
-      if (this.direction) {
+      if (this.direction && this.timeSinceLastSwitch > 5) {
         renderingContext.scale(-1, 1);
         renderingContext.translate(-TILE_SIZE * 2, 0);
       }
