@@ -689,7 +689,8 @@ define('app/game', [
       var victoryTile = getOfType(gameObject, other, VictoryTile);
       hasWon = true
       // spela upp win-grejer here!!!
-      console.log(victoryTile.pos)
+      playSound('gameMusic', true)
+      playSound('win_song')
       victoryTile.destroy()
 
       setTimeout(function () {

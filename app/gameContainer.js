@@ -12,7 +12,7 @@ requirejs([
 ], function (game, userInput) {
 
   let running = true
-  let muted = true
+  let muted = false
 
   const canvas = document.getElementById('canvas')
   const renderingContext = canvas.getContext('2d')
@@ -48,7 +48,8 @@ requirejs([
     enemy_killed: new Audio('assets/sounds/Ice_killenemy.ogg'),
     jump: new Audio('assets/sounds/Ice_jump.ogg'),
     die: new Audio('assets/sounds/Ice_die.ogg'),
-    break_block: new Audio('assets/sounds/Ice_break.ogg')
+    break_block: new Audio('assets/sounds/Ice_break.ogg'),
+    win_song: new Audio('assets/sounds/Win_song.ogg')
   }
 
   function playSound(soundString, shouldPause, reset) {
