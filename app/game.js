@@ -637,9 +637,8 @@ define('app/game', [
         gameObject.pos.y = collisions[0].pos.y - (gameObject.tileHeight || 1) * TILE_SIZE;
 
         var item = collisions[0]
-        console.log(gameObject.currentTileLevel, scroller.screenOffset)
         if (item instanceof Tile && item.pos.y < gameObject.currentTileLevel) {
-          
+
           scroller.screenOffset -= gameObject.currentTileLevel - item.pos.y
           gameObject.currentTileLevel = item.pos.y
 
@@ -843,7 +842,7 @@ define('app/game', [
         }
       })
     })
-  
+
     scroller.screenOffset = map.length * TILE_SIZE - canvasHeight
 
     var lowestTile
