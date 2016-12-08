@@ -577,12 +577,19 @@ define('app/game', [
       victoryTile.done = true;
     }
 
-    if (isOfTypes(gameObject, other, Murrio, Spike)) {
+    if (isOfTypes(gameObject, other, Murrio, Enemy)) {
       var murrio = getOfType(gameObject, other, Murrio);
+      playSound('die');
       murrio.destroy();
-      gameObjects.push(new GameRestarter());
-      gameObjects.push(new MurrioDeathAnimation({ pos: murrio.pos }));
-      playSound('gameMusic', true)
+      var deathconfig = {
+        pos: {
+          x: murrio.pos.x,
+          y: murrio.pos.y
+        }
+      }
+      gameObjects.push(new MurrioDeathAnimation(deathconfig));
+
+      //playSound('gameMusic', true)
 
       _.each(new Array(20), function() {
         var particleSettings = {
