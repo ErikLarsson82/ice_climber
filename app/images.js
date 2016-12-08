@@ -5,6 +5,18 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
   var walk_animation_sprite = new Image();
   walk_animation_sprite.src = "./assets/images/walk_animation.png";
 
+  var cloud_left = new Image();
+  cloud_left.src = "./assets/images/cloud_left.png";
+
+  var cloud_center = new Image();
+  cloud_center.src = "./assets/images/cloud_center.png";
+
+  var cloud_right = new Image();
+  cloud_right.src = "./assets/images/cloud_right.png";
+
+  var climber_swing_sheet = new Image();
+  climber_swing_sheet.src = "./assets/images/climber_swing.png";
+
   var enemy_walk = new Image();
   enemy_walk.src = "./assets/images/enemy_walk.png";
 
@@ -124,6 +136,10 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
   flag.src = "./assets/images/victory_flag.png"
 
   return {
+    cloud_left: cloud_left,
+    cloud_center: cloud_center,
+    cloud_right: cloud_right,
+    climber_swing_sheet: climber_swing_sheet,
     enemy_walk: enemy_walk,
     climber_jump: climber_jump,
     climber_walk: climber_walk,

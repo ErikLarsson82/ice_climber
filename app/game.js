@@ -81,9 +81,11 @@ define('app/game', [
       this.jumpButtonReleased = true;
       this.touchingGround = false;
       this.walk_animation = images.walk_animation;
+      this.swing_animation = null;
       this.direction = false; //True is left, false is right
       this.tileWidth = 1.99999
       this.tileHeight = 2.99999
+      this.moved_by_cloud = false
 
       this.isHackaMonsterPlaying = false
 
@@ -99,6 +101,7 @@ define('app/game', [
       this.spritesheet = SpriteSheet.new(images.climber_walk, spriteConfig)
     }
     tick() {
+      this.moved_by_cloud = false
       const pad = userInput.getInput(0)
       var acceleration = {
         x: 0,
@@ -127,6 +130,9 @@ define('app/game', [
 
       this.hackaSlafsa()
 
+      if (this.isHackaMonsterPlaying) {
+        this.swing_animation.tick(1000/60);
+      }
       var groundFriction = (this.touchingGround) ? 0.92 : 0.985;
       this.velocity = {
         x: (this.velocity.x + acceleration.x) * groundFriction,
@@ -178,20 +184,34 @@ define('app/game', [
     hackaSlafsa() {
       if (this.isHackaMonsterPressed && !this.isHackaMonsterPlaying) {
         this.isHackaMonsterPlaying = true
-        var hackaX = this.direction ? this.pos.x + this.tileWidth * TILE_SIZE : this.pos.x - TILE_SIZE
-        var hackaY = this.pos.y + TILE_SIZE
-        var hacka = new Hacka(hackaX, hackaY)
-        gameObjects.push(hacka)
-        setTimeout(function () {
-          hacka.destroy()
-          this.isHackaMonsterPlaying = false
-        }.bind(this), 200)
+
+        var hacka;
+        setTimeout(function() {
+          var hackaX = this.direction ? this.pos.x + this.tileWidth * TILE_SIZE : this.pos.x - TILE_SIZE
+          var hackaY = this.pos.y + TILE_SIZE
+          hacka = new Hacka(hackaX, hackaY)
+          gameObjects.push(hacka)
+        }.bind(this), 180)
+
+        this.swing_animation = SpriteSheet.new(images.climber_swing_sheet, {
+          frames: [50, 90, 150, 200],
+          x: 0,
+          y: 0,
+          width: 94,
+          height: 96,
+          restart: false,
+          autoPlay: true,
+          callback: function() {
+            hacka.destroy()
+            this.isHackaMonsterPlaying = false
+          }.bind(this)
+        });
       }
     }
     draw(renderingContext) {
 
       //Debug för att se vart man hackar
-      //super.draw(renderingContext)
+      super.draw(renderingContext)
       var x = this.pos.x
       if (this.direction) {
         x += this.tileWidth * TILE_SIZE
@@ -199,8 +219,16 @@ define('app/game', [
       renderingContext.fillStyle = "#FF0000"
       renderingContext.fillRect(x, this.pos.y, 5, 5)
 
-
-      if (this.touchingGround) {
+      if (this.isHackaMonsterPlaying) {
+        renderingContext.save()
+        renderingContext.translate(this.pos.x, this.pos.y);
+        if (!this.direction) {
+          renderingContext.scale(-1, 1);
+          renderingContext.translate(-TILE_SIZE * 2, 0);
+        }
+        this.swing_animation.draw(renderingContext);
+        renderingContext.restore();
+      } else if (this.touchingGround) {
         renderingContext.save()
         renderingContext.translate(this.pos.x, this.pos.y);
         if (!this.direction) {
@@ -390,7 +418,7 @@ define('app/game', [
   }
 
 
-  class Cloud5 extends GameObject {
+  class Cloud extends GameObject {
     constructor(config) {
       super(config)
       this.direction = true; //true is left, false is right
@@ -413,7 +441,13 @@ define('app/game', [
       }
       this.pos = nextPosition;
 
-      //TODO if touching murrio move murrio with cloud
+      //stop murrio from going though clouds from the side
+      var collisions = detectCollision(this);
+      _.each(collisions, function(collision) {
+        if (collision instanceof Murrio) {
+          collision.pos.x += modifier
+        }
+      })
 
       if (this.pos.x < -TILE_SIZE) {
         this.pos.x = 1024;
@@ -421,8 +455,9 @@ define('app/game', [
 
     }
     draw(renderingContext) {
-      renderingContext.fillStyle = "#00FF00";
-      renderingContext.fillRect(this.pos.x, this.pos.y, (this.tileWidth || 1) * TILE_SIZE, (this.tileHeight || 1) * TILE_SIZE);
+      //renderingContext.fillStyle = "#00FF00";
+      //renderingContext.fillRect(this.pos.x, this.pos.y, (this.tileWidth || 1) * TILE_SIZE, (this.tileHeight || 1) * TILE_SIZE);
+      renderingContext.drawImage(this.image, this.pos.x, this.pos.y)
     }
   }
 
@@ -651,7 +686,15 @@ define('app/game', [
       flag = new Flag({
         pos: victoryTile.pos,
       })
-      
+    }
+
+    if (isOfTypes(gameObject, other, Murrio, Cloud)) {
+      var murrio = getOfType(gameObject, other, Murrio);
+      if (murrio.moved_by_cloud === false) {
+        var modifier = (other.direction) ? (other.speed*-1) : other.speed;
+        murrio.pos.x += modifier
+        murrio.moved_by_cloud = true
+      }
     }
 
     if (isOfTypes(gameObject, other, Murrio, Enemy)) {
@@ -741,8 +784,10 @@ define('app/game', [
 
         if (isPointInsideRect(hackPointX, oldGmaeObjectY, item.pos.x, item.pos.y, itemWidth, itemHeight)) {
           // hakc it!
-          playSound('break_block')
-          item.destroy();
+          if (!(item instanceof Cloud)) {
+            playSound('break_block')
+            item.destroy();
+          }
         }
 
       }
@@ -813,15 +858,72 @@ define('app/game', [
             })
             gameObjects.push(tile)
           break;
-          
-          case 6:
-            cloud5 = new Cloud5({
+
+          case "a":
+            cloud = new Cloud({
               pos: {
                 x: colIdx * TILE_SIZE,
                 y: rowIdx * TILE_SIZE
               },
+              direction: true,
+              image: images.cloud_left
             })
-            gameObjects.push(cloud5)
+            gameObjects.push(cloud)
+          break;
+          case "b":
+            cloud = new Cloud({
+              pos: {
+                x: colIdx * TILE_SIZE,
+                y: rowIdx * TILE_SIZE
+              },
+              direction: true,
+              image: images.cloud_center
+            })
+            gameObjects.push(cloud)
+          break;
+          case "c":
+            cloud = new Cloud({
+              pos: {
+                x: colIdx * TILE_SIZE,
+                y: rowIdx * TILE_SIZE
+              },
+              direction: true,
+              image: images.cloud_right
+            })
+            gameObjects.push(cloud)
+          break;
+          case "d":
+            cloud = new Cloud({
+              pos: {
+                x: colIdx * TILE_SIZE,
+                y: rowIdx * TILE_SIZE
+              },
+              direction: false,
+              image: images.cloud_left
+            })
+            gameObjects.push(cloud)
+          break;
+          case "e":
+            cloud = new Cloud({
+              pos: {
+                x: colIdx * TILE_SIZE,
+                y: rowIdx * TILE_SIZE
+              },
+              direction: false,
+              image: images.cloud_center
+            })
+            gameObjects.push(cloud)
+          break;
+          case "f":
+            cloud = new Cloud({
+              pos: {
+                x: colIdx * TILE_SIZE,
+                y: rowIdx * TILE_SIZE
+              },
+              direction: false,
+              image: images.cloud_right
+            })
+            gameObjects.push(cloud)
           break;
           case 7:
             var victoryTile = new VictoryTile({
