@@ -889,6 +889,8 @@ define('app/game', [
     scroller = new ScreenScroller();
 
     loadMap(map.getMap()[currentMapIdx]);
+
+    actualScreenOffset = scroller.screenOffset
   }
 
   window.addEventListener("keydown", function(e) {
@@ -917,6 +919,8 @@ define('app/game', [
     }
   })
 
+  var actualScreenOffset
+
   return {
     init: init,
     tick: function() {
@@ -934,7 +938,10 @@ define('app/game', [
       renderingContext.drawImage(images.sky,0,0)
 
       renderingContext.save();
-      renderingContext.translate(0, -scroller.getScreenOffset());
+      if (actualScreenOffset > scroller.screenOffset) {
+        actualScreenOffset--
+      }
+      renderingContext.translate(0, -actualScreenOffset);
       _.each(gameObjects, function (gameObject) {
         if (gameObject instanceof Decor) gameObject.draw(renderingContext)
       })
