@@ -439,7 +439,6 @@ define('app/game', [
       gameObjects.push(new GameRestarter());
       gameObjects.push(new MurrioDeathAnimation({ pos: murrio.pos }));
       playSound('gameMusic', true)
-      playSound('gameOverMusic', false, false)
 
       if (death.particles) {
         _.each(new Array(20), function() {
@@ -468,7 +467,6 @@ define('app/game', [
       gameObjects.push(gr);
       gameObjects.push(new MurrioWin({ pos: murrio.pos }));
       playSound('gameMusic', true)
-      playSound('victoryMusic', false, false)
       grandpa.done = true;
       victoryTile.done = true;
     }
@@ -479,7 +477,6 @@ define('app/game', [
       gameObjects.push(new GameRestarter());
       gameObjects.push(new MurrioDeathAnimation({ pos: murrio.pos }));
       playSound('gameMusic', true)
-      playSound('gameOverMusic')
 
       _.each(new Array(20), function() {
         var particleSettings = {
@@ -541,10 +538,11 @@ define('app/game', [
           hackPointX = gameObject.pos.x + gameObject.tileWidth
         }
         // var hackPointY = gameObject.pos.y
- 
+
         if (isPointInsideRect(hackPointX, oldGmaeObjectY, item.pos.x, item.pos.y, itemWidth, itemHeight)) {
           // hakc it!
           console.log('DESTRO')
+          playSound('break_block')
           item.destroy();
         }
 
@@ -751,8 +749,6 @@ define('app/game', [
     loadMap(map.getMap()[currentMapIdx]);
 
     playSound('gameMusic', false, true)
-    playSound('victoryMusic', true, true)
-    playSound('gameOverMusic', true, true)
 
     scroller = new ScreenScroller();
   }
@@ -805,8 +801,6 @@ define('app/game', [
       })
     },
     destroy: function() {
-      playSound('victoryMusic', true)
-      playSound('gameOverMusic', true)
       playSound('gameMusic', true)
     }
   }

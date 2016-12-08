@@ -26,8 +26,6 @@ requirejs([
       muted = !muted
       if (muted) {
         gameMusic.pause()
-        victoryMusic.pause();
-        gameOverMusic.pause();
       } else {
         gameMusic.play()
       }
@@ -38,25 +36,19 @@ requirejs([
   })
 
 
-  const gameMusic = new Audio('assets/sounds/Mariohappy.ogg')
+  const gameMusic = new Audio('assets/sounds/Ice_Climber_Less_Ruski.ogg')
   gameMusic.addEventListener('ended', function() {
-      this.currentTime = 0;
-      this.play();
-  }, false);
-
-  const victoryMusic = new Audio('assets/sounds/Mariowon.ogg')
-
-  const gameOverMusic = new Audio('assets/sounds/Mariosad.ogg')
-  gameOverMusic.addEventListener('ended', function() {
       this.currentTime = 0;
       this.play();
   }, false);
 
   const sfxs = {
     gameMusic: gameMusic,
-    victoryMusic: victoryMusic,
-    gameOverMusic: gameOverMusic,
-    jump: new Audio('assets/sounds/Mariojump.ogg')
+    miss: new Audio('assets/sounds/Ice_miss.ogg'),
+    enemy_killed: new Audio('assets/sounds/Ice_killenemy.ogg'),
+    jump: new Audio('assets/sounds/Ice_jump.ogg'),
+    die: new Audio('assets/sounds/Ice_die.ogg'),
+    break_block: new Audio('assets/sounds/Ice_break.ogg')
   }
 
   function playSound(soundString, shouldPause, reset) {
