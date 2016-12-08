@@ -135,6 +135,9 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
   var flag = new Image()
   flag.src = "./assets/images/victory_flag.png"
 
+  var victory_text = new Image()
+  victory_text.src = "./assets/images/victory_text.png"
+
   return {
     cloud_left: cloud_left,
     cloud_center: cloud_center,
@@ -170,5 +173,6 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
     spike_blueprint: spike_blueprint,
     particleSpike: particleSpike,
     flag: flag,
+    victory_text: victory_text,
   }
 })

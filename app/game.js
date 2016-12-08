@@ -40,6 +40,7 @@ define('app/game', [
   let currentMapIdx = 0;
   let hasWon = false
   let flag
+  let showVictoryText = false
 
   function debugWriteButtons(pad) {
         if (!DEBUG_WRITE_BUTTONS) return;
@@ -683,6 +684,11 @@ define('app/game', [
       // spela upp win-grejer here!!!
       console.log(victoryTile.pos)
       victoryTile.destroy()
+
+      setTimeout(function () {
+        showVictoryText = true
+      }, 1000)
+
       flag = new Flag({
         pos: victoryTile.pos,
       })
@@ -1146,6 +1152,10 @@ define('app/game', [
       }
 
       renderingContext.restore();
+
+      if (showVictoryText) {
+        renderingContext.drawImage(images.victory_text, 320, 220)
+      }
 
       _.each(gameObjects, function (gameObject) {
         if (gameObject instanceof GameRestarter) gameObject.draw(renderingContext)
