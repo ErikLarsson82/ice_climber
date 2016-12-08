@@ -302,8 +302,19 @@ define('app/game', [
       this.speed = 0.5;
       this.tileWidth = 1.0001
       this.tileHeight = 1.0001
+
+      this.spritesheet = SpriteSheet.new(images.enemy_walk, {
+        frames: [200, 200, 200, 200],
+        x: 0,
+        y: 0,
+        width: 64,
+        height: 96,
+        restart: true,
+        autoPlay: true,
+      });
     }
     tick() {
+      this.spritesheet.tick(1000/60);
       if (!this.direction && this.distance > this.totalWalkDistance) {
         this.direction = true;
       } else if (this.direction && this.distance < 0) {
@@ -338,8 +349,17 @@ define('app/game', [
       }
     }
     draw(renderingContext) {
-      renderingContext.fillStyle = "#FF0000";
-      renderingContext.fillRect(this.pos.x, this.pos.y, (this.tileWidth || 1) * TILE_SIZE, (this.tileHeight || 1) * TILE_SIZE);
+      //renderingContext.fillStyle = "#FF0000";
+      //renderingContext.fillRect(this.pos.x, this.pos.y, (this.tileWidth || 1) * TILE_SIZE, (this.tileHeight || 1) * TILE_SIZE);
+
+      renderingContext.save()
+      renderingContext.translate(this.pos.x - (TILE_SIZE/2), this.pos.y - TILE_SIZE * 2);
+      if (this.direction) {
+        renderingContext.scale(-1, 1);
+        renderingContext.translate(-TILE_SIZE * 2, 0);
+      }
+      this.spritesheet.draw(renderingContext);
+      renderingContext.restore();
     }
   }
 

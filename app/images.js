@@ -5,6 +5,9 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
   var walk_animation_sprite = new Image();
   walk_animation_sprite.src = "./assets/images/walk_animation.png";
 
+  var enemy_walk = new Image();
+  enemy_walk.src = "./assets/images/enemy_walk.png";
+
   var walk_animation = SpriteSheet.new(walk_animation_sprite, {
     frames: [200, 200, 200],
     x: 0,
@@ -118,6 +121,7 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
   particleSpike.src = "./assets/images/particleSpike.png";
 
   return {
+    enemy_walk: enemy_walk,
     climber_jump: climber_jump,
     climber_walk: climber_walk,
     idle: idle,
