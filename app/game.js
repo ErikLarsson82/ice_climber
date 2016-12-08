@@ -24,7 +24,7 @@ define('app/game', [
 
   const DEBUG_WRITE_BUTTONS = false;
   const DEBUG_DISABLE_GRAPHICS = false;
-  const DEBUG_DRAW_BOXES = false;
+  const DEBUG_DRAW_BOXES = !false;
   const DEBUG_HOTKEYS = true;
   let DEBUG_START_OFFSET = 0;
 
@@ -83,6 +83,8 @@ define('app/game', [
       this.tileWidth = 1.99999
       this.tileHeight = 2.99999
 
+      this.isHackaMonsterPlaying = false
+
       var spriteConfig = {
         frames: [200, 200, 200, 200, 200],
         x: 0,
@@ -115,6 +117,14 @@ define('app/game', [
         this.jumpButtonReleased = true;
       }
 
+      if (pad.buttons[2].pressed) { // hacka slafsa!
+        this.isHackaMonsterPressed = true
+      } else {
+        this.isHackaMonsterPressed = false
+      }
+
+      this.hackaSlafsa()
+
       var groundFriction = (this.touchingGround) ? 0.92 : 0.985;
       this.velocity = {
         x: (this.velocity.x + acceleration.x) * groundFriction,
@@ -127,7 +137,7 @@ define('app/game', [
 
       //Collision with edge of map
       if (nextPosition.x <= 0) {
-        nextPosition.x = scroller.getScreenOffset() + 1;
+        nextPosition.x = 1;
         this.velocity.x = 0;
       } else if (nextPosition.x >= canvasWidth - this.tileWidth * TILE_SIZE) {
         nextPosition.x = canvasWidth - this.tileWidth * TILE_SIZE - 1
@@ -163,6 +173,19 @@ define('app/game', [
       this.touchingGround = false;
       this.jumpButtonReleased = false;
     }
+    hackaSlafsa() {
+      if (this.isHackaMonsterPressed && !this.isHackaMonsterPlaying) {
+        this.isHackaMonsterPlaying = true
+        var hackaX = this.direction ? this.pos.x + this.tileWidth * TILE_SIZE : this.pos.x - TILE_SIZE
+        var hackaY = this.pos.y + TILE_SIZE
+        var hacka = new Hacka(hackaX, hackaY)
+        gameObjects.push(hacka)
+        setTimeout(function () {
+          hacka.destroy()
+          this.isHackaMonsterPlaying = false
+        }.bind(this), 200)
+      }
+    }
     draw(renderingContext) {
 
       //Debug för att se vart man hackar
@@ -194,6 +217,19 @@ define('app/game', [
         renderingContext.drawImage(images.climber_jump, 0, 0);
         renderingContext.restore();
       }
+    }
+  }
+
+  class Hacka extends GameObject {
+    constructor(x, y) {
+      super({
+        pos: {
+          x: x,
+          y: y,
+        }
+      })
+      this.tileWidth = 1
+      this.tileHeight = 2
     }
   }
 
@@ -282,10 +318,14 @@ define('app/game', [
       this.pos = nextPosition;
 
       var collisions = detectCollision(this);
+
       var tiles_touched = 0
       _.each(collisions, function(collision) {
         if (collision instanceof Tile) {tiles_touched += 1}
-      })
+        if (collision instanceof Hacka) {
+          this.destroy()
+        }
+      }.bind(this))
 
       if (tiles_touched == 1) {
         if (this.direction === false) {
@@ -612,6 +652,14 @@ define('app/game', [
       if (fromTop) {
         gameObject.pos.y = collisions[0].pos.y - (gameObject.tileHeight || 1) * TILE_SIZE;
 
+        var item = collisions[0]
+        if (item instanceof Tile && item.pos.y < gameObject.currentTileLevel) {
+
+          scroller.screenOffset -= gameObject.currentTileLevel - item.pos.y
+          gameObject.currentTileLevel = item.pos.y
+
+        }
+
       } else {
         // console.log('SLOG I HUVET!!')
         var oldGmaeObjectY = gameObject.pos.y
@@ -809,6 +857,21 @@ define('app/game', [
         }
       })
     })
+
+    scroller.screenOffset = map.length * TILE_SIZE - canvasHeight
+
+    var lowestTile
+    gameObjects.forEach(function (gob) {
+      if (lowestTile) {
+        if (gob.pos.y > lowestTile.pos.y) {
+          lowestTile = gob
+        }
+      } else {
+        lowestTile = gob
+      }
+    })
+
+    murrio.currentTileLevel = lowestTile.pos.y
   }
 
   function playerAlive() {
@@ -835,11 +898,13 @@ define('app/game', [
 
     gameObjects = []
 
-    loadMap(map.getMap()[currentMapIdx]);
-
     playSound('gameMusic', false, true)
 
     scroller = new ScreenScroller();
+
+    loadMap(map.getMap()[currentMapIdx]);
+
+    actualScreenOffset = scroller.screenOffset
   }
 
   window.addEventListener("keydown", function(e) {
@@ -868,6 +933,8 @@ define('app/game', [
     }
   })
 
+  var actualScreenOffset
+
   return {
     init: init,
     tick: function() {
@@ -885,7 +952,10 @@ define('app/game', [
       renderingContext.drawImage(images.sky,0,0)
 
       renderingContext.save();
-      renderingContext.translate(0, -scroller.getScreenOffset());
+      if (actualScreenOffset >= scroller.screenOffset) {
+        actualScreenOffset -= 2
+      }
+      renderingContext.translate(0, -actualScreenOffset);
       _.each(gameObjects, function (gameObject) {
         if (gameObject instanceof Decor) gameObject.draw(renderingContext)
       })
