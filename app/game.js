@@ -39,6 +39,8 @@ define('app/game', [
   let victoryTile;
   let currentMapIdx = 0;
   let hasWon = false
+  let flag
+  let showVictoryText = false
 
   function debugWriteButtons(pad) {
         if (!DEBUG_WRITE_BUTTONS) return;
@@ -183,7 +185,7 @@ define('app/game', [
     hackaSlafsa() {
       if (this.isHackaMonsterPressed && !this.isHackaMonsterPlaying) {
         this.isHackaMonsterPlaying = true
-
+        playSound('miss')
         var hacka;
         setTimeout(function() {
           var hackaX = this.direction ? this.pos.x + this.tileWidth * TILE_SIZE : this.pos.x - TILE_SIZE
@@ -280,9 +282,9 @@ define('app/game', [
     }
     draw(renderingContext) {
       renderingContext.save();
-      renderingContext.translate(this.pos.x, this.pos.y);
+      renderingContext.translate(this.pos.x + TILE_SIZE, this.pos.y + (TILE_SIZE * 2));
       renderingContext.rotate(this.rotation);
-      renderingContext.drawImage(images.idle, - TILE_SIZE, - TILE_SIZE)
+      renderingContext.drawImage(images.climber_jump, -TILE_SIZE, TILE_SIZE * -2)
       renderingContext.restore();
     }
   }
@@ -364,6 +366,7 @@ define('app/game', [
         if (collision instanceof Tile) {tiles_touched += 1}
         if (collision instanceof Hacka) {
           this.destroy()
+          playSound('enemy_killed')
         }
       }.bind(this))
 
@@ -387,6 +390,30 @@ define('app/game', [
         renderingContext.scale(-1, 1);
         renderingContext.translate(-TILE_SIZE * 2, 0);
       }
+      this.spritesheet.draw(renderingContext);
+      renderingContext.restore();
+    }
+  }
+
+  class Flag extends GameObject {
+    constructor(config) {
+      super(config)
+      this.spritesheet = SpriteSheet.new(images.flag, {
+        frames: [200, 200, 200],
+        x: 0,
+        y: 0,
+        width: 64,
+        height: 96,
+        restart: false,
+        autoPlay: true,
+      })
+    }
+    tick() {
+      this.spritesheet.tick(1000/60)
+    }
+    draw(renderingContext) {
+      renderingContext.save()
+      renderingContext.translate(this.pos.x - TILE_SIZE, this.pos.y - TILE_SIZE * 2);
       this.spritesheet.draw(renderingContext);
       renderingContext.restore();
     }
@@ -467,9 +494,17 @@ define('app/game', [
   class VictoryTile extends GameObject {
     constructor(config) {
       super(config)
-      this.image = images.pipe
+      this.spritesheet = SpriteSheet.new(images.flag, {
+        frames: [200, 200, 200],
+        x: 0,
+        y: 0,
+        width: 64,
+        height: 96,
+        restart: false,
+        autoPlay: false,
+      })
     }
-    tick() {
+    // tick() {
       // if (!this.done) {
       //   if (Math.random() > 0.0001) {
       //     var particleSettings = {
@@ -488,6 +523,12 @@ define('app/game', [
       //     gameObjects.push(particle);
       //   }
       // }
+    // }
+    draw(renderingContext) {
+      renderingContext.save()
+      renderingContext.translate(this.pos.x - TILE_SIZE, this.pos.y - TILE_SIZE * 2);
+      this.spritesheet.draw(renderingContext);
+      renderingContext.restore();
     }
   }
 
@@ -628,8 +669,8 @@ define('app/game', [
         _.each(new Array(20), function() {
           var particleSettings = {
             pos: {
-              x: murrio.pos.x + (Math.random() * TILE_SIZE),
-              y: murrio.pos.y + TILE_SIZE - (Math.random() * 2),
+              x: murrio.pos.x + TILE_SIZE + (Math.random() * TILE_SIZE),
+              y: murrio.pos.y + (TILE_SIZE * 2) - (Math.random() * 2),
             },
             velocity: {
               x: (Math.random() - 0.5) * 1.2,
@@ -645,10 +686,19 @@ define('app/game', [
     }
     if (isOfTypes(gameObject, other, Murrio, VictoryTile)) {
       var murrio = getOfType(gameObject, other, Murrio);
+      var victoryTile = getOfType(gameObject, other, VictoryTile);
       hasWon = true
       // spela upp win-grejer here!!!
+      console.log(victoryTile.pos)
+      victoryTile.destroy()
 
+      setTimeout(function () {
+        showVictoryText = true
+      }, 1000)
 
+      flag = new Flag({
+        pos: victoryTile.pos,
+      })
     }
 
     if (isOfTypes(gameObject, other, Murrio, Cloud)) {
@@ -672,13 +722,13 @@ define('app/game', [
       }
       gameObjects.push(new MurrioDeathAnimation(deathconfig));
 
-      //playSound('gameMusic', true)
+      playSound('gameMusic', true)
 
       _.each(new Array(20), function() {
         var particleSettings = {
           pos: {
-            x: murrio.pos.x + TILE_SIZE / 2,
-            y: murrio.pos.y + TILE_SIZE / 2,
+            x: murrio.pos.x + TILE_SIZE + (Math.random() * TILE_SIZE),
+              y: murrio.pos.y + (TILE_SIZE * 2) - (Math.random() * 2),
           },
           velocity: {
             x: (Math.random() - 0.5) * 5,
@@ -1158,7 +1208,7 @@ define('app/game', [
     tick: function() {
       endConditions();
       if (hasWon) {
-
+        flag.tick()
         return
       }
       _.each(gameObjects, function (gameObject) {
@@ -1185,7 +1235,16 @@ define('app/game', [
         if (!(gameObject instanceof Decor || gameObject instanceof GameRestarter))
           gameObject.draw(renderingContext)
       })
+
+      if (flag) {
+        flag.draw(renderingContext)
+      }
+
       renderingContext.restore();
+
+      if (showVictoryText) {
+        renderingContext.drawImage(images.victory_text, 320, 220)
+      }
 
       _.each(gameObjects, function (gameObject) {
         if (gameObject instanceof GameRestarter) gameObject.draw(renderingContext)
