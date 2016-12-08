@@ -24,7 +24,7 @@ define('app/game', [
 
   const DEBUG_WRITE_BUTTONS = false;
   const DEBUG_DISABLE_GRAPHICS = false;
-  const DEBUG_DRAW_BOXES = !false;
+  const DEBUG_DRAW_BOXES = false;
   const DEBUG_HOTKEYS = true;
   let DEBUG_START_OFFSET = 0;
 
@@ -39,6 +39,7 @@ define('app/game', [
   let victoryTile;
   let currentMapIdx = 0;
   let hasWon = false
+  let flag
 
   function debugWriteButtons(pad) {
         if (!DEBUG_WRITE_BUTTONS) return;
@@ -364,6 +365,30 @@ define('app/game', [
     }
   }
 
+  class Flag extends GameObject {
+    constructor(config) {
+      super(config)
+      this.spritesheet = SpriteSheet.new(images.flag, {
+        frames: [200, 200, 200],
+        x: 0,
+        y: 0,
+        width: 64,
+        height: 96,
+        restart: false,
+        autoPlay: true,
+      })
+    }
+    tick() {
+      this.spritesheet.tick(1000/60)
+    }
+    draw(renderingContext) {
+      renderingContext.save()
+      renderingContext.translate(this.pos.x - TILE_SIZE, this.pos.y - TILE_SIZE * 2);
+      this.spritesheet.draw(renderingContext);
+      renderingContext.restore();
+    }
+  }
+
 
   class Cloud5 extends GameObject {
     constructor(config) {
@@ -426,9 +451,17 @@ define('app/game', [
   class VictoryTile extends GameObject {
     constructor(config) {
       super(config)
-      this.image = images.pipe
+      this.spritesheet = SpriteSheet.new(images.flag, {
+        frames: [200, 200, 200],
+        x: 0,
+        y: 0,
+        width: 64,
+        height: 96,
+        restart: false,
+        autoPlay: false,
+      })
     }
-    tick() {
+    // tick() {
       // if (!this.done) {
       //   if (Math.random() > 0.0001) {
       //     var particleSettings = {
@@ -447,6 +480,12 @@ define('app/game', [
       //     gameObjects.push(particle);
       //   }
       // }
+    // }
+    draw(renderingContext) {
+      renderingContext.save()
+      renderingContext.translate(this.pos.x - TILE_SIZE, this.pos.y - TILE_SIZE * 2);
+      this.spritesheet.draw(renderingContext);
+      renderingContext.restore();
     }
   }
 
@@ -604,9 +643,14 @@ define('app/game', [
     }
     if (isOfTypes(gameObject, other, Murrio, VictoryTile)) {
       var murrio = getOfType(gameObject, other, Murrio);
+      var victoryTile = getOfType(gameObject, other, VictoryTile);
       hasWon = true
       // spela upp win-grejer here!!!
-      
+      console.log(victoryTile.pos)
+      victoryTile.destroy()
+      flag = new Flag({
+        pos: victoryTile.pos,
+      })
       
     }
 
@@ -967,7 +1011,7 @@ define('app/game', [
     tick: function() {
       endConditions();
       if (hasWon) {
-
+        flag.tick()
         return 
       } 
       _.each(gameObjects, function (gameObject) {
@@ -994,6 +1038,11 @@ define('app/game', [
         if (!(gameObject instanceof Decor || gameObject instanceof GameRestarter))
           gameObject.draw(renderingContext)
       })
+
+      if (flag) {
+        flag.draw(renderingContext)
+      }
+
       renderingContext.restore();
 
       _.each(gameObjects, function (gameObject) {

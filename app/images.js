@@ -120,6 +120,9 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
   var particleSpike = new Image();
   particleSpike.src = "./assets/images/particleSpike.png";
 
+  var flag = new Image()
+  flag.src = "./assets/images/victory_flag.png"
+
   return {
     enemy_walk: enemy_walk,
     climber_jump: climber_jump,
@@ -150,5 +153,6 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
     spike: spike,
     spike_blueprint: spike_blueprint,
     particleSpike: particleSpike,
+    flag: flag,
   }
 })
