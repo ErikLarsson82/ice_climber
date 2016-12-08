@@ -24,7 +24,7 @@ define('app/game', [
 
   const DEBUG_WRITE_BUTTONS = false;
   const DEBUG_DISABLE_GRAPHICS = false;
-  const DEBUG_DRAW_BOXES = !false;
+  const DEBUG_DRAW_BOXES = false;
   const DEBUG_HOTKEYS = true;
   let DEBUG_START_OFFSET = 0;
 
@@ -80,6 +80,7 @@ define('app/game', [
       this.jumpButtonReleased = true;
       this.touchingGround = false;
       this.walk_animation = images.walk_animation;
+      this.swing_animation = null;
       this.direction = false; //True is left, false is right
       this.tileWidth = 1.99999
       this.tileHeight = 2.99999
@@ -128,6 +129,9 @@ define('app/game', [
 
       this.hackaSlafsa()
 
+      if (this.isHackaMonsterPlaying) {
+        this.swing_animation.tick(1000/60);
+      }
       var groundFriction = (this.touchingGround) ? 0.92 : 0.985;
       this.velocity = {
         x: (this.velocity.x + acceleration.x) * groundFriction,
@@ -179,20 +183,31 @@ define('app/game', [
     hackaSlafsa() {
       if (this.isHackaMonsterPressed && !this.isHackaMonsterPlaying) {
         this.isHackaMonsterPlaying = true
+
         var hackaX = this.direction ? this.pos.x + this.tileWidth * TILE_SIZE : this.pos.x - TILE_SIZE
         var hackaY = this.pos.y + TILE_SIZE
         var hacka = new Hacka(hackaX, hackaY)
         gameObjects.push(hacka)
-        setTimeout(function () {
-          hacka.destroy()
-          this.isHackaMonsterPlaying = false
-        }.bind(this), 200)
+
+        this.swing_animation = SpriteSheet.new(images.climber_swing_sheet, {
+          frames: [50, 90, 150, 200],
+          x: 0,
+          y: 0,
+          width: 94,
+          height: 96,
+          restart: false,
+          autoPlay: true,
+          callback: function() {
+            hacka.destroy()
+            this.isHackaMonsterPlaying = false
+          }.bind(this)
+        });
       }
     }
     draw(renderingContext) {
 
       //Debug för att se vart man hackar
-      //super.draw(renderingContext)
+      super.draw(renderingContext)
       var x = this.pos.x
       if (this.direction) {
         x += this.tileWidth * TILE_SIZE
@@ -200,8 +215,16 @@ define('app/game', [
       renderingContext.fillStyle = "#FF0000"
       renderingContext.fillRect(x, this.pos.y, 5, 5)
 
-
-      if (this.touchingGround) {
+      if (this.isHackaMonsterPlaying) {
+        renderingContext.save()
+        renderingContext.translate(this.pos.x, this.pos.y);
+        if (!this.direction) {
+          renderingContext.scale(-1, 1);
+          renderingContext.translate(-TILE_SIZE * 2, 0);
+        }
+        this.swing_animation.draw(renderingContext);
+        renderingContext.restore();
+      } else if (this.touchingGround) {
         renderingContext.save()
         renderingContext.translate(this.pos.x, this.pos.y);
         if (!this.direction) {

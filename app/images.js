@@ -5,6 +5,9 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
   var walk_animation_sprite = new Image();
   walk_animation_sprite.src = "./assets/images/walk_animation.png";
 
+  var climber_swing_sheet = new Image();
+  climber_swing_sheet.src = "./assets/images/climber_swing.png";
+
   var enemy_walk = new Image();
   enemy_walk.src = "./assets/images/enemy_walk.png";
 
@@ -121,6 +124,7 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
   particleSpike.src = "./assets/images/particleSpike.png";
 
   return {
+    climber_swing_sheet: climber_swing_sheet,
     enemy_walk: enemy_walk,
     climber_jump: climber_jump,
     climber_walk: climber_walk,
