@@ -24,11 +24,11 @@ define('app/game', [
 
   const DEBUG_WRITE_BUTTONS = false;
   const DEBUG_DISABLE_GRAPHICS = false;
-  const DEBUG_DRAW_BOXES = false;
+  const DEBUG_DRAW_BOXES = !false;
   const DEBUG_HOTKEYS = false;
   let DEBUG_START_OFFSET = 0;
 
-  const TILE_SIZE = 48;
+  const TILE_SIZE = 32;
   const GRAVITY = 0.3;
   const TIME_UNTIL_RESTART = 200;
 
@@ -60,7 +60,9 @@ define('app/game', [
     draw(renderingContext) {
       if (DEBUG_DRAW_BOXES) {
         renderingContext.fillStyle = this.color;
-        renderingContext.fillRect(this.pos.x, this.pos.y, TILE_SIZE, TILE_SIZE)
+        renderingContext.fillRect(this.pos.x, this.pos.y, (this.tileWidth || 1) * TILE_SIZE, (this.tileHeight || 1) * TILE_SIZE)
+        renderingContext.strokeStyle = "#000000";
+        renderingContext.strokeRect(this.pos.x, this.pos.y, (this.tileWidth || 1) * TILE_SIZE, (this.tileHeight || 1) * TILE_SIZE)
       } else {
         if (!this.image) return;
         renderingContext.drawImage(this.image, this.pos.x, this.pos.y)
@@ -78,6 +80,8 @@ define('app/game', [
       this.touchingGround = false;
       this.walk_animation = images.walk_animation;
       this.direction = false; //True is left, false is right
+      this.tileWidth = 1.99999
+      this.tileHeight = 2.99999
     }
     tick() {
       const pad = userInput.getInput(0)
@@ -140,31 +144,31 @@ define('app/game', [
       this.touchingGround = false;
       this.jumpButtonReleased = false;
     }
-    draw(renderingContext) {
-      if (Math.abs(this.velocity.x) > 1 && this.touchingGround) {
-        renderingContext.save()
-        renderingContext.translate(this.pos.x, this.pos.y);
-        if (!this.direction) {
-          renderingContext.scale(-1, 1);
-          renderingContext.translate(-TILE_SIZE, 0);
-        }
-        this.walk_animation.draw(renderingContext);
-        renderingContext.restore();
-      }  else {
-        renderingContext.save();
-        renderingContext.translate(this.pos.x, this.pos.y);
-        if (!this.direction) {
-          renderingContext.scale(-1, 1);
-          renderingContext.translate(-TILE_SIZE, 0);
-        }
-        if (this.touchingGround) {
-          renderingContext.drawImage(images.idle, 0, 0)
-        } else {
-          renderingContext.drawImage(images.jump, 0, 0)
-        }
-        renderingContext.restore();
-      }
-    }
+    // draw(renderingContext) {
+      // if (Math.abs(this.velocity.x) > 1 && this.touchingGround) {
+      //   renderingContext.save()
+      //   renderingContext.translate(this.pos.x, this.pos.y);
+      //   if (!this.direction) {
+      //     renderingContext.scale(-1, 1);
+      //     renderingContext.translate(-TILE_SIZE, 0);
+      //   }
+      //   this.walk_animation.draw(renderingContext);
+      //   renderingContext.restore();
+      // }  else {
+      //   renderingContext.save();
+      //   renderingContext.translate(this.pos.x, this.pos.y);
+      //   if (!this.direction) {
+      //     renderingContext.scale(-1, 1);
+      //     renderingContext.translate(-TILE_SIZE, 0);
+      //   }
+      //   if (this.touchingGround) {
+      //     renderingContext.drawImage(images.idle, 0, 0)
+      //   } else {
+      //     renderingContext.drawImage(images.jump, 0, 0)
+      //   }
+      //   renderingContext.restore();
+      // }
+    // }
   }
 
   class MurrioDeathAnimation extends GameObject {
@@ -458,15 +462,25 @@ define('app/game', [
       return _.filter(gameObjects, function(item) {
         if (item === who) return;
 
-        const condition1 = who.pos.x + TILE_SIZE > item.pos.x;
-        const condition2 = who.pos.x < item.pos.x + TILE_SIZE;
-        const condition3 = who.pos.y + TILE_SIZE > item.pos.y;
-        const condition4 = who.pos.y < item.pos.y + TILE_SIZE;
+        var whoHeight = (who.tileHeight || 1) * TILE_SIZE
+        var whoWidth = (who.tileWidth || 1) * TILE_SIZE
+
+        var itemHeight = (item.tileHeight || 1) * TILE_SIZE
+        var itemWidth = (item.tileWidth || 1) * TILE_SIZE
+
+        const conditionLeftWithinWidth = item.pos.x > who.pos.x && item.pos.x < who.pos.x + whoWidth
+        const conditionRightWithinWidth = item.pos.x + itemWidth > who.pos.x && item.pos.x + itemWidth < who.pos.x + whoWidth
+        const conditionTopWithinHeight = item.pos.y > who.pos.y && item.pos.y < who.pos.y + whoHeight
+        const conditionBottomWithinHeight = item.pos.y + itemHeight > who.pos.y && item.pos.y + whoHeight < who.pos.y + whoHeight
         const condition5 = !item.markedForRemoval
         const condition6 = !(item instanceof Particle)
         const condition7 = !(item instanceof Grandpa)
         const condition8 = !(item instanceof Decor)
-        return (condition1 && condition2 && condition3 && condition4 && condition5 && condition6 && condition7 && condition8);
+        return ((conditionLeftWithinWidth && conditionTopWithinHeight) ||
+          (conditionLeftWithinWidth && conditionBottomWithinHeight) ||
+          (conditionRightWithinWidth && conditionTopWithinHeight) ||
+          (conditionRightWithinWidth && conditionBottomWithinHeight)) &&
+          condition5 && condition6 && condition7 && condition8;
       });
     }
 
@@ -478,7 +492,6 @@ define('app/game', [
       gameObjects.push(new GameRestarter());
       gameObjects.push(new MurrioDeathAnimation({ pos: murrio.pos }));
       playSound('gameMusic', true)
-      playSound('gameOverMusic', false, false)
 
       if (death.particles) {
         _.each(new Array(20), function() {
@@ -507,7 +520,6 @@ define('app/game', [
       gameObjects.push(gr);
       gameObjects.push(new MurrioWin({ pos: murrio.pos }));
       playSound('gameMusic', true)
-      playSound('victoryMusic', false, false)
       grandpa.done = true;
       victoryTile.done = true;
     }
@@ -518,7 +530,6 @@ define('app/game', [
       gameObjects.push(new GameRestarter());
       gameObjects.push(new MurrioDeathAnimation({ pos: murrio.pos }));
       playSound('gameMusic', true)
-      playSound('gameOverMusic')
 
       _.each(new Array(20), function() {
         var particleSettings = {
@@ -545,26 +556,56 @@ define('app/game', [
     gameObject.pos.x = newPos.x;
     var collisions = detectCollision(gameObject);
     if (collisions.length > 0) {
+      console.log('SIDE COLLISION')
       _.each(collisions, function(collision) { resolveCollision(gameObject, collision) });
       if (fromLeft) {
-        gameObject.pos.x = collisions[0].pos.x - TILE_SIZE;
+        gameObject.pos.x = collisions[0].pos.x - (collisions[0].tileWidth || 1) * TILE_SIZE;
       } else {
-        gameObject.pos.x = collisions[0].pos.x + TILE_SIZE;
+        gameObject.pos.x = collisions[0].pos.x + (collisions[0].tileWidth || 1) * TILE_SIZE;
       }
       callbackX();
     }
 
     gameObject.pos.y = newPos.y;
     var collisions = detectCollision(gameObject);
+    // console.log(collisions)
     if (collisions.length > 0) {
       _.each(collisions, function(collision) { resolveCollision(gameObject, collision) });
       if (fromTop) {
-        gameObject.pos.y = collisions[0].pos.y - TILE_SIZE;
+        gameObject.pos.y = collisions[0].pos.y - (gameObject.tileHeight || 1) * TILE_SIZE;
+
       } else {
-        gameObject.pos.y = collisions[0].pos.y + TILE_SIZE;
+        // console.log('SLOG I HUVET!!')
+        var oldGmaeObjectY = gameObject.pos.y
+        gameObject.pos.y = collisions[0].pos.y + (collisions[0].tileHeight || 1) * TILE_SIZE;
+
+
+        // hackan!
+        var item = collisions[0]
+        var itemHeight = (item.tileHeight || 1) * TILE_SIZE
+        var itemWidth = (item.tileWidth || 1) * TILE_SIZE
+
+        var hackPointX = gameObject.pos.x
+        // this.direction = false; //True is left, false is right
+        if (gameObject.direction) {
+          hackPointX = gameObject.pos.x + gameObject.tileWidth
+        }
+        // var hackPointY = gameObject.pos.y
+
+        if (isPointInsideRect(hackPointX, oldGmaeObjectY, item.pos.x, item.pos.y, itemWidth, itemHeight)) {
+          // hakc it!
+          console.log('DESTRO')
+          playSound('break_block')
+          item.destroy();
+        }
+
       }
       callbackY(collisions);
     }
+  }
+
+  function isPointInsideRect(x, y, rx, ry, rw, rh) {
+    return x > rx && x < rx + rh && y > ry && y < ry + rh
   }
 
   function loadMap(map) {
@@ -573,10 +614,10 @@ define('app/game', [
       _.each(row, function(column, colIdx) {
         switch(column) {
           case 1:
-            var verticalOffset = (DEBUG_START_OFFSET > 0) ? 50 : rowIdx * TILE_SIZE;
+            var verticalOffset = rowIdx * TILE_SIZE;
             murrio = new Murrio({
               pos: {
-                x: colIdx * TILE_SIZE + DEBUG_START_OFFSET,
+                x: colIdx * TILE_SIZE,
                 y: verticalOffset
               },
               velocity: {
@@ -592,7 +633,7 @@ define('app/game', [
                 x: colIdx * TILE_SIZE,
                 y: rowIdx * TILE_SIZE
               },
-              image: images.tile
+              // image: images.tile
             })
             gameObjects.push(tile)
           break;
@@ -760,8 +801,6 @@ define('app/game', [
     loadMap(map.getMap()[currentMapIdx]);
 
     playSound('gameMusic', false, true)
-    playSound('victoryMusic', true, true)
-    playSound('gameOverMusic', true, true)
 
     scroller = new ScreenScroller();
   }
@@ -814,8 +853,6 @@ define('app/game', [
       })
     },
     destroy: function() {
-      playSound('victoryMusic', true)
-      playSound('gameOverMusic', true)
       playSound('gameMusic', true)
     }
   }
