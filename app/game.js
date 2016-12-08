@@ -822,6 +822,22 @@ define('app/game', [
           // hakc it!
           if (!(item instanceof Cloud)) {
             playSound('break_block')
+            _.each(new Array(20), function() {
+              var particleSettings = {
+                pos: {
+                  x: item.pos.x + (TILE_SIZE/2) + (Math.random() * 2),
+                  y: item.pos.y + (TILE_SIZE/2) + (Math.random() * 2),
+                },
+                velocity: {
+                  x: (Math.random() - 0.5) * 5,
+                  y: -(Math.random() - 0.5) * 5,
+                },
+                image: images.particleIce,
+                lifetime: 80
+              }
+              var particle = new Particle(particleSettings);
+              gameObjects.push(particle);
+            }.bind(this))
             item.destroy();
           }
         }

@@ -135,6 +135,9 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
   var particleSpike = new Image();
   particleSpike.src = "./assets/images/particleSpike.png";
 
+  var particleIce = new Image();
+  particleIce.src = "./assets/images/particleIce.png";
+
   var flag = new Image()
   flag.src = "./assets/images/victory_flag.png"
 
@@ -161,6 +164,7 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
     won: won,
     dead: dead,
     sky: sky,
+    particleIce: particleIce,
     pratbubblathanks: pratbubblathanks,
     lavaparticle: lavaparticle,
     press_any_key: press_any_key,
