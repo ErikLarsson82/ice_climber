@@ -222,22 +222,33 @@ define('app/game', [
   class Enemy extends GameObject {
     constructor(config) {
       super(config)
-      this.direction = false; //true is left, false is right
+      this.direction = true; //true is left, false is right
       this.speed = 0.5;
-      this.spritesheet = config.sprite;
+      this.tileWidth = 1.0001
+      this.tileHeight = 1.0001
 
-      this.turn_detector = new GameObject({
-        pos: {
-          x: this.pos.x + TILE_SIZE,
-          y: this.pos.y + TILE_SIZE
-        },
-        image: images.lavaparticle
-      })
+      // this.turn_left_detector = new GameObject({
+      //   pos: {
+      //     x: this.pos.x + TILE_SIZE + 1,
+      //     y: this.pos.y + TILE_SIZE + 1
+      //   },
+      // })
+      // this.turn_left_detector.tileWidth = 0.1
+      // this.turn_left_detector.tileHeight = 0.1
 
-      gameObjects.push(this.turn_detector)
+      //  this.turn_right_detector = new GameObject({
+      //   pos: {
+      //     x: this.pos.x - 6,
+      //     y: this.pos.y + TILE_SIZE + 1
+      //   },
+      // })
+      // this.turn_right_detector.tileWidth = 0.1
+      // this.turn_right_detector.tileHeight = 0.1
+
+      // gameObjects.push(this.turn_left_detector)
+      // gameObjects.push(this.turn_right_detector)
     }
     tick() {
-      this.spritesheet.tick(1000/60);
       if (!this.direction && this.distance > this.totalWalkDistance) {
         this.direction = true;
       } else if (this.direction && this.distance < 0) {
@@ -250,28 +261,25 @@ define('app/game', [
         y: this.pos.y
       }
       this.pos = nextPosition;
-      this.turn_detector.pos.x += modifier
+      //this.turn_left_detector.pos.x += modifier
+      //this.turn_right_detector.pos.x += modifier
 
-      var callbackY = function() {
-        this.velocity.y = 0;
-        this.jumpAvailable = 2;
-        this.touchingGround = true;
+      var collisions = detectCollision(this);
+      console.log(collisions)
+      if (collisions.length == 1) {
+        if (this.direction === false) {
+          this.direction = true
+        } else {
+          this.direction = false
+        }
+      } else if (collisions.length == 0) {
+          //enemy should die
+          this.destroy()
       }
-
-      var collisions = detectCollision(this.turn_detector);
-      //console.log(collisions)
-
-      //TODO check is not tile infront then turn
     }
     draw(renderingContext) {
-      renderingContext.save();
-      renderingContext.translate(this.pos.x, this.pos.y)
-      if (this.direction) {
-        renderingContext.scale(-1, 1)
-        renderingContext.translate(-TILE_SIZE, 0)
-      }
-      this.spritesheet.draw(renderingContext);
-      renderingContext.restore();
+      renderingContext.fillStyle = "#FF0000";
+      renderingContext.fillRect(this.pos.x, this.pos.y, (this.tileWidth || 1) * TILE_SIZE, (this.tileHeight || 1) * TILE_SIZE);
     }
   }
 
