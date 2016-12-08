@@ -25,7 +25,7 @@ define('app/game', [
   const DEBUG_WRITE_BUTTONS = false;
   const DEBUG_DISABLE_GRAPHICS = false;
   const DEBUG_DRAW_BOXES = !false;
-  const DEBUG_HOTKEYS = false;
+  const DEBUG_HOTKEYS = true;
   let DEBUG_START_OFFSET = 0;
 
   const TILE_SIZE = 32;
@@ -176,9 +176,23 @@ define('app/game', [
       super(config)
       this.color = "yellow";
       this.image = images.dead;
+      this.rotation = 0;
+      this.countdown = 140;
     }
     tick() {
-      this.pos.y -= 1;
+      this.rotation += 0.1;
+      this.countdown--;
+
+      if (this.countdown <= 0) {
+        init();
+      }
+    }
+    draw(renderingContext) {
+      renderingContext.save();
+      renderingContext.translate(this.pos.x, this.pos.y);
+      renderingContext.rotate(this.rotation);
+      renderingContext.drawImage(images.idle, - TILE_SIZE, - TILE_SIZE)
+      renderingContext.restore();
     }
   }
 
@@ -818,6 +832,17 @@ define('app/game', [
     if (e.keyCode === 66) { // b
       currentMapIdx = 0;
       init();
+    }
+    if (e.keyCode === 67) { // c
+      playSound('die');
+      murrio.destroy();
+      var deathconfig = {
+        pos: {
+          x: murrio.pos.x,
+          y: murrio.pos.y
+        }
+      }
+      gameObjects.push(new MurrioDeathAnimation(deathconfig));
     }
   })
 
