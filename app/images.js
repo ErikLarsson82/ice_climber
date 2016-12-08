@@ -53,12 +53,15 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
   var spike = new Image();
   spike.src = "./assets/images/spikmurr_animation.png";
 
+  var climber_walk = new Image();
+  climber_walk.src = "./assets/images/climber_walk.png";
+
   var spike_blueprint = {
-    frames: [200, 200],
+    frames: [200, 200, 200],
     x: 0,
     y: 0,
-    width: 48,
-    height: 48,
+    width: 64,
+    height: 96,
     restart: true,
     autoPlay: true,
   }
@@ -109,6 +112,7 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
   particleSpike.src = "./assets/images/particleSpike.png";
 
   return {
+    climber_walk: climber_walk,
     idle: idle,
     walk_animation: walk_animation,
     jump: jump,

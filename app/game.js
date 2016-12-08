@@ -84,15 +84,15 @@ define('app/game', [
       this.tileHeight = 2.99999
 
       var spriteConfig = {
-        frames: [200, 200],
+        frames: [200, 200, 200],
         x: 0,
         y: 0,
-        width: 48,
-        height: 48,
+        width: 64,
+        height: 96,
         restart: true,
         autoPlay: true,
       }
-      this.spritesheet = SpriteSheet.new(images.spike, spriteConfig)
+      this.spritesheet = SpriteSheet.new(images.climber_walk, spriteConfig)
     }
     tick() {
       const pad = userInput.getInput(0)
@@ -145,7 +145,8 @@ define('app/game', [
       this.touchingGround = false;
       handleMove(this, nextPosition, callbackX.bind(this), callbackY.bind(this));
 
-      this.spritesheet.tick(Math.round(1000/60 * Math.abs(this.velocity.x)));
+      var tickspeed = Math.round(1000/60 * Math.abs(this.velocity.x));
+      this.spritesheet.tick((tickspeed === 0) ? 0.00001 : tickspeed); // 0 gives spasms
 
       if (this.velocity.x < -0.1) {
         this.direction = false
@@ -163,9 +164,9 @@ define('app/game', [
       this.jumpButtonReleased = false;
     }
     draw(renderingContext) {
-      
+
       //Debug för att se vart man hackar
-      super.draw(renderingContext)
+      //super.draw(renderingContext)
       var x = this.pos.x
       if (this.direction) {
         x += this.tileWidth * TILE_SIZE
@@ -179,7 +180,7 @@ define('app/game', [
         renderingContext.translate(this.pos.x, this.pos.y);
         if (!this.direction) {
           renderingContext.scale(-1, 1);
-          renderingContext.translate(-TILE_SIZE, 0);
+          renderingContext.translate(-TILE_SIZE * 2, 0);
         }
         this.spritesheet.draw(renderingContext);
         renderingContext.restore();
