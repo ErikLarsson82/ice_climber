@@ -24,7 +24,7 @@ define('app/game', [
 
   const DEBUG_WRITE_BUTTONS = false;
   const DEBUG_DISABLE_GRAPHICS = false;
-  const DEBUG_DRAW_BOXES = false;
+  const DEBUG_DRAW_BOXES = !false;
   const DEBUG_HOTKEYS = true;
   let DEBUG_START_OFFSET = 0;
 
@@ -83,6 +83,8 @@ define('app/game', [
       this.tileWidth = 1.99999
       this.tileHeight = 2.99999
 
+      this.isHackaMonsterPlaying = false
+
       var spriteConfig = {
         frames: [200, 200, 200, 200, 200],
         x: 0,
@@ -114,6 +116,14 @@ define('app/game', [
       if (!pad.buttons[0].pressed) { // up
         this.jumpButtonReleased = true;
       }
+
+      if (pad.buttons[2].pressed) { // hacka slafsa!
+        this.isHackaMonsterPressed = true
+      } else {
+        this.isHackaMonsterPressed = false
+      }
+
+      this.hackaSlafsa()
 
       var groundFriction = (this.touchingGround) ? 0.92 : 0.985;
       this.velocity = {
@@ -163,6 +173,19 @@ define('app/game', [
       this.touchingGround = false;
       this.jumpButtonReleased = false;
     }
+    hackaSlafsa() {
+      if (this.isHackaMonsterPressed && !this.isHackaMonsterPlaying) {
+        this.isHackaMonsterPlaying = true
+        var hackaX = this.direction ? this.pos.x + this.tileWidth * TILE_SIZE : this.pos.x - TILE_SIZE
+        var hackaY = this.pos.y + TILE_SIZE
+        var hacka = new Hacka(hackaX, hackaY)
+        gameObjects.push(hacka)
+        setTimeout(function () {
+          hacka.destroy()
+          this.isHackaMonsterPlaying = false
+        }.bind(this), 200)
+      }
+    }
     draw(renderingContext) {
 
       //Debug för att se vart man hackar
@@ -194,6 +217,19 @@ define('app/game', [
         renderingContext.drawImage(images.climber_jump, 0, 0);
         renderingContext.restore();
       }
+    }
+  }
+
+  class Hacka extends GameObject {
+    constructor(x, y) {
+      super({
+        pos: {
+          x: x,
+          y: y,
+        }
+      })
+      this.tileWidth = 1
+      this.tileHeight = 2
     }
   }
 
@@ -309,7 +345,10 @@ define('app/game', [
       var tiles_touched = 0
       _.each(collisions, function(collision) {
         if (collision instanceof Tile) {tiles_touched += 1}
-      })
+        if (collision instanceof Hacka) {
+          this.destroy()
+        }
+      }.bind(this))
 
       if (tiles_touched == 1) {
         if (this.direction === false) {
@@ -937,8 +976,8 @@ define('app/game', [
       renderingContext.drawImage(images.sky,0,0)
 
       renderingContext.save();
-      if (actualScreenOffset > scroller.screenOffset) {
-        actualScreenOffset--
+      if (actualScreenOffset >= scroller.screenOffset) {
+        actualScreenOffset -= 2
       }
       renderingContext.translate(0, -actualScreenOffset);
       _.each(gameObjects, function (gameObject) {
