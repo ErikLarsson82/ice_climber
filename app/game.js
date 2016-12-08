@@ -127,7 +127,7 @@ define('app/game', [
 
       //Collision with edge of map
       if (nextPosition.x <= 0) {
-        nextPosition.x = scroller.getScreenOffset() + 1;
+        nextPosition.x = 1;
         this.velocity.x = 0;
       } else if (nextPosition.x >= canvasWidth - this.tileWidth * TILE_SIZE) {
         nextPosition.x = canvasWidth - this.tileWidth * TILE_SIZE - 1
@@ -297,7 +297,7 @@ define('app/game', [
       //this.turn_right_detector.pos.x += modifier
 
       var collisions = detectCollision(this);
-      console.log(collisions)
+      
       if (collisions.length == 1) {
         if (this.direction === false) {
           this.direction = true
@@ -616,6 +616,15 @@ define('app/game', [
       if (fromTop) {
         gameObject.pos.y = collisions[0].pos.y - (gameObject.tileHeight || 1) * TILE_SIZE;
 
+        var item = collisions[0]
+        console.log(gameObject.currentTileLevel, scroller.screenOffset)
+        if (item instanceof Tile && item.pos.y < gameObject.currentTileLevel) {
+          
+          scroller.screenOffset -= gameObject.currentTileLevel - item.pos.y
+          gameObject.currentTileLevel = item.pos.y
+
+        }
+
       } else {
         // console.log('SLOG I HUVET!!')
         var oldGmaeObjectY = gameObject.pos.y
@@ -813,6 +822,21 @@ define('app/game', [
         }
       })
     })
+  
+    scroller.screenOffset = map.length * TILE_SIZE - canvasHeight
+
+    var lowestTile
+    gameObjects.forEach(function (gob) {
+      if (lowestTile) {
+        if (gob.pos.y > lowestTile.pos.y) {
+          lowestTile = gob
+        }
+      } else {
+        lowestTile = gob
+      }
+    })
+
+    murrio.currentTileLevel = lowestTile.pos.y
   }
 
   function playerAlive() {
@@ -839,11 +863,11 @@ define('app/game', [
 
     gameObjects = []
 
-    loadMap(map.getMap()[currentMapIdx]);
-
     playSound('gameMusic', false, true)
 
     scroller = new ScreenScroller();
+
+    loadMap(map.getMap()[currentMapIdx]);
   }
 
   window.addEventListener("keydown", function(e) {
