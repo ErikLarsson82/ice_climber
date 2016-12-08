@@ -2,9 +2,10 @@ define('app/map', [], function() {
   /*
     PLAYER: 1,
     TILE: 2,
+    ENEMY: 3,
     
   */
-  return {
+  return { 
     getMap: function() {
 
         var maps = [];

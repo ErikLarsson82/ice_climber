@@ -16,9 +16,7 @@ define('app/game', [
   /*
     PLAYER: 1,
     TILE: 2,
-    ENEMY1: 3,
-    ENEMY2: 4,
-    VICTORY: 5
+    ENEMY: 3,
   */
 
   let canvasWidth
@@ -217,13 +215,68 @@ define('app/game', [
     }
   }
 
+  class Enemy extends GameObject {
+    constructor(config) {
+      super(config)
+      this.direction = false; //true is left, false is right
+      this.speed = 0.5;
+      this.spritesheet = config.sprite;
+
+      this.turn_detector = new GameObject({
+        pos: {
+          x: this.pos.x + TILE_SIZE,
+          y: this.pos.y + TILE_SIZE
+        },
+        image: images.lavaparticle
+      })
+
+      gameObjects.push(this.turn_detector)
+    }
+    tick() {
+      this.spritesheet.tick(1000/60);
+      if (!this.direction && this.distance > this.totalWalkDistance) {
+        this.direction = true;
+      } else if (this.direction && this.distance < 0) {
+        this.direction = false;
+      }
+      var modifier = (this.direction) ? (this.speed*-1) : this.speed;
+      this.distance += modifier;
+      var nextPosition = {
+        x: this.pos.x + modifier,
+        y: this.pos.y
+      }
+      this.pos = nextPosition;
+      this.turn_detector.pos.x += modifier
+
+      var callbackY = function() {
+        this.velocity.y = 0;
+        this.jumpAvailable = 2;
+        this.touchingGround = true;
+      }
+
+      var collisions = detectCollision(this.turn_detector);
+      //console.log(collisions)
+
+      //TODO check is not tile infront then turn
+    }
+    draw(renderingContext) {
+      renderingContext.save();
+      renderingContext.translate(this.pos.x, this.pos.y)
+      if (this.direction) {
+        renderingContext.scale(-1, 1)
+        renderingContext.translate(-TILE_SIZE, 0)
+      }
+      this.spritesheet.draw(renderingContext);
+      renderingContext.restore();
+    }
+  }
+
+
   class Spike extends GameObject {
     constructor(config) {
       super(config)
-      this.image = images.pipe;
-      this.direction = false;
-      this.totalWalkDistance = config.totalWalkDistance;
-      this.distance = this.totalWalkDistance;
+      this.image = images.grandpa;
+      this.direction = "left";
       this.speed = 0.3;
       this.spritesheet = config.sprite;
     }
@@ -544,15 +597,14 @@ define('app/game', [
             gameObjects.push(tile)
           break;
           case 3:
-            var tile = new DeathTile({
+            var enemy = new Enemy({
               pos: {
                 x: colIdx * TILE_SIZE,
                 y: rowIdx * TILE_SIZE
               },
-              sprite: SpriteSheet.new(images.lava, images.lava_blueprint),
-              particles: true
+              sprite: SpriteSheet.new(images.spike, images.spike_blueprint),
             })
-            gameObjects.push(tile)
+            gameObjects.push(enemy)
           break;
           case 5:
             victoryTile = new VictoryTile({
