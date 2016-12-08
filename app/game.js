@@ -24,7 +24,7 @@ define('app/game', [
 
   const DEBUG_WRITE_BUTTONS = false;
   const DEBUG_DISABLE_GRAPHICS = false;
-  const DEBUG_DRAW_BOXES = !false;
+  const DEBUG_DRAW_BOXES = false;
   const DEBUG_HOTKEYS = true;
   let DEBUG_START_OFFSET = 0;
 
@@ -84,7 +84,7 @@ define('app/game', [
       this.tileHeight = 2.99999
 
       var spriteConfig = {
-        frames: [200, 200, 200],
+        frames: [200, 200, 200, 200, 200],
         x: 0,
         y: 0,
         width: 64,
@@ -185,7 +185,14 @@ define('app/game', [
         this.spritesheet.draw(renderingContext);
         renderingContext.restore();
       } else {
-        renderingContext.drawImage(images.pipe, this.pos.x, this.pos.y);
+        renderingContext.save();
+        renderingContext.translate(this.pos.x, this.pos.y);
+        if (!this.direction) {
+          renderingContext.scale(-1, 1);
+          renderingContext.translate(-TILE_SIZE * 2, 0);
+        }
+        renderingContext.drawImage(images.climber_jump, 0, 0);
+        renderingContext.restore();
       }
     }
   }
@@ -679,7 +686,7 @@ define('app/game', [
                 x: colIdx * TILE_SIZE,
                 y: rowIdx * TILE_SIZE
               },
-              // image: images.tile
+              image: images.tile
             })
             gameObjects.push(tile)
           break;
@@ -693,16 +700,17 @@ define('app/game', [
             })
             gameObjects.push(enemy)
           break;
-          case 5:
-            victoryTile = new VictoryTile({
+          case 4:
+            var tile = new Tile({
               pos: {
                 x: colIdx * TILE_SIZE,
                 y: rowIdx * TILE_SIZE
-              }
+              },
+              image: images.tile2
             })
-            gameObjects.push(victoryTile)
+            gameObjects.push(tile)
           break;
-          case 6:
+          case 5:
             var tile = new Tile({
               pos: {
                 x: colIdx * TILE_SIZE,
