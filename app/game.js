@@ -185,7 +185,14 @@ define('app/game', [
         this.spritesheet.draw(renderingContext);
         renderingContext.restore();
       } else {
-        renderingContext.drawImage(images.pipe, this.pos.x, this.pos.y);
+        renderingContext.save();
+        renderingContext.translate(this.pos.x, this.pos.y);
+        if (!this.direction) {
+          renderingContext.scale(-1, 1);
+          renderingContext.translate(-TILE_SIZE * 2, 0);
+        }
+        renderingContext.drawImage(images.climber_jump, 0, 0);
+        renderingContext.restore();
       }
     }
   }

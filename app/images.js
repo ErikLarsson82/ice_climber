@@ -56,6 +56,9 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
   var climber_walk = new Image();
   climber_walk.src = "./assets/images/climber_walk.png";
 
+  var climber_jump = new Image();
+  climber_jump.src = "./assets/images/climber_jump.png";
+
   var spike_blueprint = {
     frames: [200, 200, 200],
     x: 0,
@@ -112,6 +115,7 @@ define('app/images', ['SpriteSheet'], function(SpriteSheet) {
   particleSpike.src = "./assets/images/particleSpike.png";
 
   return {
+    climber_jump: climber_jump,
     climber_walk: climber_walk,
     idle: idle,
     walk_animation: walk_animation,
