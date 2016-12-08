@@ -24,7 +24,7 @@ define('app/game', [
 
   const DEBUG_WRITE_BUTTONS = false;
   const DEBUG_DISABLE_GRAPHICS = false;
-  const DEBUG_DRAW_BOXES = !false;
+  const DEBUG_DRAW_BOXES = false;
   const DEBUG_HOTKEYS = true;
   let DEBUG_START_OFFSET = 0;
 
@@ -686,7 +686,7 @@ define('app/game', [
                 x: colIdx * TILE_SIZE,
                 y: rowIdx * TILE_SIZE
               },
-              // image: images.tile
+              image: images.tile
             })
             gameObjects.push(tile)
           break;
