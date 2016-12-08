@@ -126,8 +126,11 @@ define('app/game', [
       }
 
       //Collision with edge of map
-      if (nextPosition.x <= scroller.getScreenOffset() + 10) {
-        nextPosition.x = scroller.getScreenOffset() + 10;
+      if (nextPosition.x <= 0) {
+        nextPosition.x = scroller.getScreenOffset() + 1;
+        this.velocity.x = 0;
+      } else if (nextPosition.x >= canvasWidth - this.tileWidth * TILE_SIZE) {
+        nextPosition.x = canvasWidth - this.tileWidth * TILE_SIZE - 1
         this.velocity.x = 0;
       }
 
@@ -438,9 +441,9 @@ define('app/game', [
       this.screenOffset = DEBUG_START_OFFSET || 0;
     }
     tick() {
-      if (murrio.pos.x > canvasWidth / 2 + this.screenOffset) {
-        this.screenOffset = murrio.pos.x - canvasWidth / 2;
-      }
+      // if (murrio.pos.x > canvasWidth / 2 + this.screenOffset) {
+      //   this.screenOffset = murrio.pos.x - canvasWidth / 2;
+      // }
     }
     getScreenOffset() {
       return this.screenOffset;
@@ -588,7 +591,6 @@ define('app/game', [
     gameObject.pos.x = newPos.x;
     var collisions = detectCollision(gameObject);
     if (collisions.length > 0) {
-      console.log('SIDE COLLISION')
       _.each(collisions, function(collision) { resolveCollision(gameObject, collision) });
       if (fromLeft) {
         gameObject.pos.x = collisions[0].pos.x - (gameObject.tileWidth || 1) * TILE_SIZE;
@@ -842,7 +844,6 @@ define('app/game', [
   window.addEventListener("keydown", function(e) {
     if (!DEBUG_HOTKEYS) return;
     if (e.keyCode === 83) { // s
-      scroller.screenOffset = scroller.screenOffset + 1000;
       murrio.pos.x = murrio.pos.x + 1000;
     }
     if (e.keyCode === 78) { // n
@@ -873,7 +874,7 @@ define('app/game', [
       _.each(gameObjects, function (gameObject) {
         gameObject.tick();
       });
-      // scroller.tick();
+      scroller.tick();
 
       gameObjects = gameObjects.filter(function (gameObject) {
         return !gameObject.markedForRemoval
@@ -883,7 +884,7 @@ define('app/game', [
       renderingContext.drawImage(images.sky,0,0)
 
       renderingContext.save();
-      renderingContext.translate(-scroller.getScreenOffset(), 0);
+      renderingContext.translate(0, -scroller.getScreenOffset());
       _.each(gameObjects, function (gameObject) {
         if (gameObject instanceof Decor) gameObject.draw(renderingContext)
       })
