@@ -281,9 +281,9 @@ define('app/game', [
     }
     draw(renderingContext) {
       renderingContext.save();
-      renderingContext.translate(this.pos.x, this.pos.y);
+      renderingContext.translate(this.pos.x + TILE_SIZE, this.pos.y + (TILE_SIZE * 2));
       renderingContext.rotate(this.rotation);
-      renderingContext.drawImage(images.idle, - TILE_SIZE, - TILE_SIZE)
+      renderingContext.drawImage(images.climber_jump, -TILE_SIZE, TILE_SIZE * -2)
       renderingContext.restore();
     }
   }
@@ -661,8 +661,8 @@ define('app/game', [
         _.each(new Array(20), function() {
           var particleSettings = {
             pos: {
-              x: murrio.pos.x + (Math.random() * TILE_SIZE),
-              y: murrio.pos.y + TILE_SIZE - (Math.random() * 2),
+              x: murrio.pos.x + TILE_SIZE + (Math.random() * TILE_SIZE),
+              y: murrio.pos.y + (TILE_SIZE * 2) - (Math.random() * 2),
             },
             velocity: {
               x: (Math.random() - 0.5) * 1.2,
@@ -709,13 +709,13 @@ define('app/game', [
       }
       gameObjects.push(new MurrioDeathAnimation(deathconfig));
 
-      //playSound('gameMusic', true)
+      playSound('gameMusic', true)
 
       _.each(new Array(20), function() {
         var particleSettings = {
           pos: {
-            x: murrio.pos.x + TILE_SIZE / 2,
-            y: murrio.pos.y + TILE_SIZE / 2,
+            x: murrio.pos.x + TILE_SIZE + (Math.random() * TILE_SIZE),
+              y: murrio.pos.y + (TILE_SIZE * 2) - (Math.random() * 2),
           },
           velocity: {
             x: (Math.random() - 0.5) * 5,
