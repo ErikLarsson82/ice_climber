@@ -25,7 +25,7 @@ define('app/game', [
   const DEBUG_WRITE_BUTTONS = false;
   const DEBUG_DISABLE_GRAPHICS = false;
   const DEBUG_DRAW_BOXES = !false;
-  const DEBUG_HOTKEYS = false;
+  const DEBUG_HOTKEYS = true;
   let DEBUG_START_OFFSET = 0;
 
   const TILE_SIZE = 32;
@@ -144,7 +144,14 @@ define('app/game', [
       this.touchingGround = false;
       this.jumpButtonReleased = false;
     }
-    // draw(renderingContext) {
+    draw(renderingContext) {
+      super.draw(renderingContext)
+      var x = this.pos.x
+      if (this.direction) {
+        x += this.tileWidth * TILE_SIZE
+      }
+      renderingContext.fillStyle = "#FF0000"
+      renderingContext.fillRect(x, this.pos.y, 5, 5)
       // if (Math.abs(this.velocity.x) > 1 && this.touchingGround) {
       //   renderingContext.save()
       //   renderingContext.translate(this.pos.x, this.pos.y);
@@ -168,7 +175,7 @@ define('app/game', [
       //   }
       //   renderingContext.restore();
       // }
-    // }
+    }
   }
 
   class MurrioDeathAnimation extends GameObject {
@@ -176,9 +183,23 @@ define('app/game', [
       super(config)
       this.color = "yellow";
       this.image = images.dead;
+      this.rotation = 0;
+      this.countdown = 140;
     }
     tick() {
-      this.pos.y -= 1;
+      this.rotation += 0.1;
+      this.countdown--;
+
+      if (this.countdown <= 0) {
+        init();
+      }
+    }
+    draw(renderingContext) {
+      renderingContext.save();
+      renderingContext.translate(this.pos.x, this.pos.y);
+      renderingContext.rotate(this.rotation);
+      renderingContext.drawImage(images.idle, - TILE_SIZE, - TILE_SIZE)
+      renderingContext.restore();
     }
   }
 
@@ -567,7 +588,7 @@ define('app/game', [
       console.log('SIDE COLLISION')
       _.each(collisions, function(collision) { resolveCollision(gameObject, collision) });
       if (fromLeft) {
-        gameObject.pos.x = collisions[0].pos.x - (collisions[0].tileWidth || 1) * TILE_SIZE;
+        gameObject.pos.x = collisions[0].pos.x - (gameObject.tileWidth || 1) * TILE_SIZE;
       } else {
         gameObject.pos.x = collisions[0].pos.x + (collisions[0].tileWidth || 1) * TILE_SIZE;
       }
@@ -576,6 +597,9 @@ define('app/game', [
 
     gameObject.pos.y = newPos.y;
     var collisions = detectCollision(gameObject);
+    if (gameObject.direction) {
+      collisions = collisions.reverse()
+    }
     // console.log(collisions)
     if (collisions.length > 0) {
       _.each(collisions, function(collision) { resolveCollision(gameObject, collision) });
@@ -596,13 +620,12 @@ define('app/game', [
         var hackPointX = gameObject.pos.x
         // this.direction = false; //True is left, false is right
         if (gameObject.direction) {
-          hackPointX = gameObject.pos.x + gameObject.tileWidth
+          hackPointX = gameObject.pos.x + gameObject.tileWidth * TILE_SIZE
         }
         // var hackPointY = gameObject.pos.y
 
         if (isPointInsideRect(hackPointX, oldGmaeObjectY, item.pos.x, item.pos.y, itemWidth, itemHeight)) {
           // hakc it!
-          console.log('DESTRO')
           playSound('break_block')
           item.destroy();
         }
@@ -826,6 +849,17 @@ define('app/game', [
     if (e.keyCode === 66) { // b
       currentMapIdx = 0;
       init();
+    }
+    if (e.keyCode === 67) { // c
+      playSound('die');
+      murrio.destroy();
+      var deathconfig = {
+        pos: {
+          x: murrio.pos.x,
+          y: murrio.pos.y
+        }
+      }
+      gameObjects.push(new MurrioDeathAnimation(deathconfig));
     }
   })
 
